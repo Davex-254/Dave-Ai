@@ -2,7 +2,7 @@ const fs = require('fs')
 const chalk = require('chalk')
 
 // Default values
-global.menuImage = global.menuImage || 'https://files.catbox.moe/cp8oat.jpg'
+global.menuImage = global.menuImage || 'https://files.catbox.moe/na6y1b.jpg'
 global.botname = global.botname || '𝘿𝙖𝙫𝙚𝘼𝙄'
 
 const Menu = `
