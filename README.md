@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/giftdee"><img title="Author" src="https://img.shields.io/badge/Author-Dave-Ai-red.svg?style=for-the-badge&logo=github"></a>
+  <a href="https://github.com/gifteddevsmd"><img title="Author" src="https://img.shields.io/badge/Author-Dave-Ai-red.svg?style=for-the-badge&logo=github"></a>
 </p>
 
 ---
@@ -15,7 +15,7 @@
 ## Deployment Set Up
 
 1. **Fork the Repository**  
-   [FORK Dave-Ai](https://github.com/giftdedavesmd/Dave-Ai/fork)
+   [FORK Dave-Ai](https://github.com/gifteddevsmd/Dave-Ai/fork)
 
 2. **Deployment Site**  
    <p align="center">
