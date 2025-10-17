@@ -27,7 +27,7 @@ global.autoreactstatus = process.env.AUTOREACTSTATUS === 'true'  // Default: fal
 
 // ==================== STICKER INFO ==================== //
 global.caption = "𝘿𝙖𝙫𝙚𝘼𝙄"
-global.updateZipUrl = "https://github.com/giftdedavesmd/Dave-Ai/archive/refs/heads/main.zip"
+global.updateZipUrl = "https://github.com/gifteddevsmd/Dave-Ai/archive/refs/heads/main.zip";
 
 //━━━━━━━━━━━━━━━━━━━━━━━━//
 // Sticker Marker
