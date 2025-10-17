@@ -5,52 +5,47 @@ const yts = require("yt-search");
 
 let daveplug = async (m, { dave, reply, text }) => {
   const tempDir = path.join(__dirname, "temp");
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir);
-  }
+  if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
 
-  const formatStylishReply = (message) => {
-    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> By Dave-AI`;
-  };
+  const fancyReply = (msg) => `🎶 *𝐃𝐀𝐕𝐄-𝐗𝐌𝐃 𝐌𝐔𝐒𝐈𝐂 𝐏𝐋𝐀𝐘𝐄𝐑*\n\n${msg}\n\n> By 𝐃𝐀𝐕𝐄-𝐀𝐈`;
 
+  // 🧩 No text provided
   if (!text) {
     return dave.sendMessage(m.chat, {
-      text: formatStylishReply("Yo, drop a song name, fam! 🎵 Ex: .play Not Like Us")
+      text: fancyReply("Yo, drop a song name fam! 🎵 Example: *.play2 Not Like Us*")
     }, { quoted: m });
   }
 
+  // 🧩 Prevent people from typing essays
   if (text.length > 100) {
     return dave.sendMessage(m.chat, {
-      text: formatStylishReply("Keep it short, homie! know who do you want to read all that paragraph idiot 😤 Song name max 100 chars.")
+      text: fancyReply("Bruh 😤 that’s too long! I ain’t reading a whole paragraph — keep it short, max 100 characters.")
     }, { quoted: m });
   }
 
   try {
-    const searchQuery = `${text} official`;
-    const searchResult = await yts(searchQuery);
+    // 🎧 Search on YouTube
+    const searchResult = await yts(`${text} official`);
     const video = searchResult.videos[0];
 
     if (!video) {
       return dave.sendMessage(m.chat, {
-        text: formatStylishReply("No tunes found, bruh! 😕 Try another search!")
+        text: fancyReply("No tunes found, bro 😕 Try another song name!")
       }, { quoted: m });
     }
 
-    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(video.url)}`;                                                                            
-    const response = await axios.get(apiUrl);
-    const apiData = response.data;
+    // 🎶 Download from API
+    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(video.url)}`;
+    const { data } = await axios.get(apiUrl);
 
-    if (!apiData.status || !apiData.result || !apiData.result.downloadUrl) {
-      throw new Error("API failed to process the video");
-    }
+    if (!data.status || !data.result?.downloadUrl)
+      throw new Error("API didn’t return a valid download link");
 
-    const timestamp = Date.now();
-    const fileName = `audio_${timestamp}.mp3`;
-    const filePath = path.join(tempDir, fileName);
+    const filePath = path.join(tempDir, `audio_${Date.now()}.mp3`);
 
     const audioResponse = await axios({
       method: "get",
-      url: apiData.result.downloadUrl,
+      url: data.result.downloadUrl,
       responseType: "stream",
       timeout: 600000,
     });
@@ -62,23 +57,21 @@ let daveplug = async (m, { dave, reply, text }) => {
       writer.on("error", reject);
     });
 
-    if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
-      throw new Error("Download failed or file is empty");
-    }
-
+    // 🎵 Inform user before sending
     await dave.sendMessage(m.chat, {
-      text: formatStylishReply(`Droppin' *${apiData.result.title || video.title}* for ya, fam! Crank it up! 🔥🎧`)
+      text: fancyReply(`🎧 Hold up! Droppin’ *${data.result.title || video.title}* for ya 🔥`)
     }, { quoted: m });
 
+    // 📩 Send audio
     await dave.sendMessage(m.chat, {
-      audio: { url: filePath },
+      audio: fs.createReadStream(filePath),
       mimetype: "audio/mpeg",
-      fileName: `${(apiData.result.title || video.title).substring(0, 100)}.mp3`,
+      fileName: `${(data.result.title || video.title).substring(0, 100)}.mp3`,
       contextInfo: {
         externalAdReply: {
-          title: apiData.result.title || video.title,
-          body: `${video.author.name || "Unknown Artist"} | Powered by Dave-AI`,
-          thumbnailUrl: apiData.result.thumbnail || video.thumbnail || "https://via.placeholder.com/120x90",                       
+          title: data.result.title || video.title,
+          body: `${video.author.name || "Unknown Artist"} | 𝐃𝐀𝐕𝐄-𝐀𝐈`,
+          thumbnailUrl: video.thumbnail,
           sourceUrl: video.url,
           mediaType: 1,
           renderLargerThumbnail: true,
@@ -86,18 +79,15 @@ let daveplug = async (m, { dave, reply, text }) => {
       },
     }, { quoted: m });
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch (error) {
-    await dave.sendMessage(m.chat, {
-      text: formatStylishReply(`Yo, we hit a snag: ${error.message}. Pick another track! 😎`)
-    }, { quoted: m });
+    // 🧹 Clean temp
+    fs.unlinkSync(filePath);
+  } catch (err) {
+    reply(fancyReply(`😕 Error: ${err.message}\nTry another song or check your connection.`));
   }
 };
 
-daveplug.help = ['play2'];
-daveplug.tags = ['download'];
-daveplug.command = ['song2'];
+daveplug.help = ['play2 <song name>'];
+daveplug.tags = ['downloader'];
+daveplug.command = ['play2'];
 
 module.exports = daveplug;
