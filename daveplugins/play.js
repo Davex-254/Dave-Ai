@@ -1,49 +1,58 @@
-const yts = require('yt-search');
 const axios = require('axios');
+const yts = require('yt-search');
+const fs = require('fs');
+const path = require('path');
 
-let daveplug = async (m, { dave, reply, text }) => {
+let daveplug = async (m, { reply, text, dave }) => {
+  try {
     if (!text) {
-        return reply('Please specify the song name!');
+      return reply('Usage: .play <song name or YouTube link>');
     }
 
-    try {
-        // Search for song
-        const { videos } = await yts(text);
-        if (!videos || videos.length === 0) {
-            return reply('No songs found!');
-        }
-
-        // Pick the first result
-        const video = videos[0];
-        const urlYt = video.url;
-
-        // Fetch audio info from API
-        const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
-        const data = response.data;
-
-        if (!data || !data.status || !data.result || !data.result.downloadUrl) {
-            return reply('Failed to fetch audio from the API. Try again later.');
-        }
-
-        const audioUrl = data.result.downloadUrl;
-        const title = data.result.title;
-
-        // Send as normal playable audio
-        await dave.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            ptt: false, // false = normal audio, true = voice note
-            caption: `🎶 *${title}*`
-        }, { quoted: m });
-
-    } catch (error) {
-        console.error('Error in play2 command:', error);
-        reply('Download failed. Please try again later.');
+    let video;
+    if (text.includes('youtube.com') || text.includes('youtu.be')) {
+      video = { url: text };
+    } else {
+      const search = await yts(text);
+      if (!search || !search.videos.length) {
+        return reply('No results found.');
+      }
+      video = search.videos[0];
     }
+
+    await dave.sendMessage(m.chat, {
+      image: { url: video.thumbnail },
+      caption: `🎵 Downloading: *${video.title}*\n⏱ Duration: ${video.timestamp}`,
+    }, { quoted: m });
+
+    const apiUrl = `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(video.url)}&format=mp3`;
+
+    const res = await axios.get(apiUrl, {
+      timeout: 30000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+
+    if (!res.data || !res.data.result || !res.data.result.download) {
+      throw new Error('Izumi API failed to return a valid link.');
+    }
+
+    const audioData = res.data.result;
+    await dave.sendMessage(m.chat, {
+      audio: { url: audioData.download },
+      mimetype: 'audio/mpeg',
+      fileName: `${audioData.title || video.title || 'song'}.mp3`,
+      ptt: false,
+    }, { quoted: m });
+  } catch (err) {
+    console.error('Song command error:', err);
+    reply('_failed to download song_');
+  }
 };
 
 daveplug.help = ['play'];
-daveplug.tags = ['download'];
+daveplug.tags = ['downloader'];
 daveplug.command = ['play'];
 
 module.exports = daveplug;
