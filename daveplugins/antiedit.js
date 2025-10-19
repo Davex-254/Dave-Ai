@@ -16,9 +16,9 @@ let daveplug = async (m, { daveshown, dave, args, reply }) => {
 
     global.antiedit = mode;
 
-    if (mode === 'on') return reply('✅ Antiedit enabled in all chats');
-    if (mode === 'private') return reply('✅ Antiedit enabled - alerts will be sent privately');
-    return reply('❌ Antiedit disabled');
+    if (mode === 'on') return reply('_Antiedit enabled in all chats_');
+    if (mode === 'private') return reply('_Antiedit enabled - alerts will be sent privately_');
+    return reply('_Antiedit disabled_');
 };
 
 // Event listener - this runs when plugin loads
