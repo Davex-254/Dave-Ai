@@ -20,7 +20,7 @@ let daveplug = async (m, { dave, reply }) => {
                     sourceUrl: "https://github.com/gifteddevsmd/Dave-Ai",
                     mediaType: 1,
                     renderLargerThumbnail: true,
-                    thumbnailUrl: "https://files.catbox.moe/zaqn1j.jpg",
+                    thumbnailUrl: "https://h.uguu.se/lqcyHNEG.jpg",
                 },
             },
         }, { quoted: m });
