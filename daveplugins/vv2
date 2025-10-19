@@ -1,0 +1,28 @@
+let daveplug = async (m, { dave, reply }) => {
+    if (!m.quoted) return;
+
+    try {
+        if (m.quoted?.imageMessage) {
+            const imageUrl = await dave.downloadAndSaveMediaMessage(m.quoted.imageMessage);
+            await dave.sendMessage(dave.user.id, { 
+                image: { url: imageUrl },
+                caption: "Retrieved by DaveAI"
+            });
+        } 
+        else if (m.quoted?.videoMessage) {
+            const videoUrl = await dave.downloadAndSaveMediaMessage(m.quoted.videoMessage);
+            await dave.sendMessage(dave.user.id, {
+                video: { url: videoUrl },
+                caption: "Retrieved by DaveAI"
+            });
+        }
+    } catch (error) {
+        console.error('Error retrieving media:', error);
+    }
+};
+
+daveplug.help = ['vv'];
+daveplug.tags = ['tools'];
+daveplug.command = ['vv'];
+
+module.exports = daveplug;
