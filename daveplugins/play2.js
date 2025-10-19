@@ -2,51 +2,70 @@ const yts = require('yt-search');
 const axios = require('axios');
 
 let daveplug = async (m, { dave, reply, text }) => {
-    if (!text) {
-        return reply('Specify the song you want to download!');
-    }
+    try {        
+        if (!text) {
+            return dave.sendMessage(m.chat, { 
+                text: "specify the song you want to download!"
+            }, { quoted: m });
+        }
 
-    try {
         // Search for the song
         const { videos } = await yts(text);
         if (!videos || videos.length === 0) {
-            return reply('No songs found!');
+            return dave.sendMessage(m.chat, { 
+                text: "No songs found!"
+            }, { quoted: m });
         }
 
         // Send loading message
-        await reply('Please wait your download is in progress');
+        await dave.sendMessage(m.chat, {
+            text: "*Your download is in progress hold tight comrade*"}, { quoted: m 
+        });
 
         // Get the first video result
         const video = videos[0];
         const urlYt = video.url;
 
         // Fetch audio data from API
-        const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
+        const response = await axios.get(`https://api.privatezia.biz.id/api/downloader/ytmp3?url=${urlYt}`);
         const data = response.data;
 
         if (!data || !data.status || !data.result || !data.result.downloadUrl) {
-            return reply('Failed to fetch audio from the API. Please try again later.');
+            return dave.sendMessage(m.chat, { 
+                text: "Failed to fetch audio from the API. Please try again later."
+            }, { quoted: m });
         }
 
         const audioUrl = data.result.downloadUrl;
         const title = data.result.title;
 
-        // Send as document instead of voice note
+        // Send the audio
         await dave.sendMessage(m.chat, {
-            document: { url: audioUrl },
+            audio: { url: audioUrl },
             mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`,
-            caption: title
+            fileName: `${title}.mp3`
         }, { quoted: m });
+
+        //successful react ✔️
+        await dave.sendMessage(m.chat, { 
+            react: { text: '🔥', key: m.key } 
+        });
 
     } catch (error) {
         console.error('Error in play command:', error);
-        reply('Download failed. Please try again later.');
+        await dave.sendMessage(m.chat, { 
+            text: "Download failed. Please try again later."
+        }, { quoted: m });
+
+        //err react ❌
+        await dave.sendMessage(m.chat, {
+            react: { text: '❌', key: m.key }
+        });
     }
 };
 
 daveplug.help = ['play2'];
-daveplug.tags = ['download'];
-daveplug.command = ['play2', 'ytmusic'];
+daveplug.tags = ['downloader'];
+daveplug.command = ['play2'];
 
 module.exports = daveplug;
