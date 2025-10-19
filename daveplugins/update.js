@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
-// 🔗 CORRECT REPO URL - Updated to your GitHub
+// CORRECT REPO URL - Updated to your GitHub
 global.updateZipUrl = "https://codeload.github.com/gifteddevsmd/Dave-Ai/zip/refs/heads/main";
 
 // Utility to run shell commands
@@ -25,17 +25,15 @@ async function downloadFile(url, dest) {
       method: 'GET',
       responseType: 'stream',
       maxRedirects: 5,
-      timeout: 30000, // 30 second timeout
+      timeout: 30000,
     });
-    
+
     response.data.pipe(writer);
-    
+
     return new Promise((resolve, reject) => {
       writer.on('finish', resolve);
       writer.on('error', reject);
       response.data.on('error', reject);
-      
-      // Add timeout for download
       setTimeout(() => reject(new Error('Download timeout')), 60000);
     });
   } catch (error) {
@@ -46,11 +44,10 @@ async function downloadFile(url, dest) {
 // Extract ZIP file with cross-platform support
 async function extractZip(zipPath, outDir) {
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-  
+
   try {
     await run(`unzip -o "${zipPath}" -d "${outDir}"`);
   } catch (error) {
-    // Fallback for Windows or if unzip not available
     const AdmZip = require('adm-zip');
     const zip = new AdmZip(zipPath);
     zip.extractAllTo(outDir, true);
@@ -60,15 +57,15 @@ async function extractZip(zipPath, outDir) {
 // Copy recursively while ignoring key folders
 async function copyRecursive(src, dest, ignore = []) {
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-  
+
   const entries = fs.readdirSync(src);
   for (const entry of entries) {
     if (ignore.includes(entry)) continue;
-    
+
     const s = path.join(src, entry);
     const d = path.join(dest, entry);
     const stat = fs.lstatSync(s);
-    
+
     if (stat.isDirectory()) {
       await copyRecursive(s, d, ignore);
     } else {
@@ -77,44 +74,44 @@ async function copyRecursive(src, dest, ignore = []) {
   }
 }
 
-// Main updater with better progress updates
+// Main updater with single message updates
 async function updateViaZip(dave, m) {
   const zipUrl = (global.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
   if (!zipUrl) throw new Error('No ZIP URL configured in global.updateZipUrl.');
 
-  // Get current version
   let currentVersion = 'unknown';
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')));
     currentVersion = pkg.version || 'unknown';
   } catch (e) {
-    console.warn('⚠️ Could not read package.json version:', e.message);
+    console.warn('Could not read package.json version:', e.message);
   }
 
   const tmpDir = path.join(process.cwd(), 'tmp_update');
   const zipPath = path.join(tmpDir, 'update.zip');
   const extractTo = path.join(tmpDir, 'update_extract');
 
-  // Clean up previous temp files
   if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir, { recursive: true });
 
+  let statusMessage;
+
   try {
-    // Step 1: Download
-    await dave.sendMessage(m.chat, { 
-      text: `📦 *𝘿𝙖𝙫𝙚𝘼𝙄 Updater*\n\n🧩 Current version: v${currentVersion}\n🔗 Repository: gifteddevsmd/Dave-Ai\n🔄 Downloading update...` 
+    // Send initial message and store the message object
+    statusMessage = await dave.sendMessage(m.chat, { 
+      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nRepository: gifteddevsmd/Dave-Ai\nStatus: Downloading update...` 
     }, { quoted: m });
 
     await downloadFile(zipUrl, zipPath);
-    
-    // Step 2: Extract
+
+    // Update the same message
     await dave.sendMessage(m.chat, { 
-      text: '📂 Extracting update files...' 
-    }, { quoted: m });
+      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nRepository: gifteddevsmd/Dave-Ai\nStatus: Extracting update files...`,
+      edit: statusMessage.key 
+    });
 
     await extractZip(zipPath, extractTo);
 
-    // Step 3: Find main folder
     const folders = fs.readdirSync(extractTo);
     const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
 
@@ -122,68 +119,84 @@ async function updateViaZip(dave, m) {
       throw new Error('Extracted folder not found');
     }
 
-    // Step 4: Copy files
     await dave.sendMessage(m.chat, { 
-      text: '📋 Copying files...' 
-    }, { quoted: m });
+      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nRepository: gifteddevsmd/Dave-Ai\nStatus: Copying files...`,
+      edit: statusMessage.key 
+    });
 
     await copyRecursive(mainFolder, process.cwd(), [
       'node_modules', '.git', 'session', 'tmp', 'tmp_update', '.env', 'config.js'
     ]);
 
-    // Step 5: Install dependencies
     await dave.sendMessage(m.chat, { 
-      text: '📥 Installing dependencies...' 
-    }, { quoted: m });
+      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nRepository: gifteddevsmd/Dave-Ai\nStatus: Installing dependencies...`,
+      edit: statusMessage.key 
+    });
 
     await run('npm install --no-audit --no-fund');
 
-    // Clean up
     if (fs.existsSync(tmpDir)) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
 
-    // Success message
     await dave.sendMessage(m.chat, {
-      text: `✅ *Update Complete!*\n\n✨ 𝘿𝙖𝙫𝙚𝘼𝙄 has been successfully updated!\n📈 From: v${currentVersion}\n📊 To: latest version\n\n♻️ Restarting bot...`
-    }, { quoted: m });
+      text: `Update Complete!\n\nDaveAI has been successfully updated!\nFrom: v${currentVersion}\nTo: latest version\n\nRestarting bot...`,
+      edit: statusMessage.key 
+    });
 
-    // Restart after delay
     setTimeout(() => {
-      console.log('🔄 Restarting DaveAI after update...');
+      console.log('Restarting DaveAI after update...');
       process.exit(0);
     }, 3000);
 
   } catch (error) {
-    // Clean up on error
     if (fs.existsSync(tmpDir)) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+    
+    if (statusMessage) {
+      await dave.sendMessage(m.chat, {
+        text: `Update Failed\n\nError: ${error.message}\n\nCheck the repository URL and try again.`,
+        edit: statusMessage.key 
+      });
     }
     throw error;
   }
 }
 
-// Plugin definition with better response handling
+// Plugin definition
 let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) {
-    return reply('⚠️ Only the owner can use this command.');
+    return reply('Only the owner can use this command.');
   }
 
   try {
     if (command === 'update') {
       await updateViaZip(dave, m);
     } else if (command === 'restart' || command === 'start') {
-      await reply('♻️ Restarting 𝘿𝙖𝙫𝙚𝘼𝙄...');
+      await reply('Restarting DaveAI...');
       setTimeout(() => {
-        console.log('🔄 Manual restart initiated...');
+        console.log('Manual restart initiated...');
         process.exit(0);
       }, 2000);
     } else {
       reply('Usage: .update or .restart');
     }
   } catch (err) {
-    console.error('Update Error:', err);
-    reply(`❌ Update failed: ${err.message}\n\n🔧 Check the repository URL and try again.`);
+    console.error('Update Error Details:', err);
+    
+    let errorMessage = "Unknown error occurred";
+    if (err && typeof err === 'object') {
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.toString && typeof err.toString === 'function') {
+        errorMessage = err.toString();
+      }
+    } else if (typeof err === 'string') {
+      errorMessage = err;
+    }
+    
+    reply(`Update failed: ${errorMessage}\n\nCheck the repository URL and try again.`);
   }
 };
 
