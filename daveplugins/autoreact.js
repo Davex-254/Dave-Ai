@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
     try {
@@ -19,9 +20,9 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
         global.AREACT = mode === 'on';
 
         try {
-            // If you want to save to settings.js
+            const settingsPath = path.join(process.cwd(), 'settings.js');
             const settings = { AREACT: global.AREACT };
-            fs.writeFileSync('./settings.js', `module.exports = ${JSON.stringify(settings, null, 2)};`);
+            fs.writeFileSync(settingsPath, `module.exports = ${JSON.stringify(settings, null, 2)};`);
         } catch (error) {
             console.error('Error saving settings:', error.message);
             return reply('Failed to save settings!');
