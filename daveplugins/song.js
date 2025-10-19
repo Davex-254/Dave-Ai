@@ -48,11 +48,11 @@ let daveplug = async (m, { dave, reply, text }) => {
 
         //successful react ✔️
         await dave.sendMessage(m.chat, { 
-            react: { text: '🔊', key: m.key } 
+            react: { text: '🔥', key: m.key } 
         });
         
         await dave.sendMessage(m.chat, {
-            text: `_Downloaded successfully by DaveAI 🖤_`
+            text: `_𝘿𝙖𝙫𝙚𝘼𝙄 is on fire 🔥_`
         }, { quoted: m });
 
     } catch (error) {
