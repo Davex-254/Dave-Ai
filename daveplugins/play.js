@@ -1,54 +1,67 @@
-const axios = require('axios');
 const yts = require('yt-search');
-const fs = require('fs');
-const path = require('path');
+const axios = require('axios');
 
-let daveplug = async (m, { reply, text, dave }) => {
-  try {
-    if (!text) {
-      return reply('Usage: .play <song name or YouTube link>');
+let daveplug = async (m, { dave, reply, text }) => {
+    try {        
+        if (!text) {
+            return dave.sendMessage(m.chat, { 
+                text: "What song do you want to download?"
+            }, { quoted: m });
+        }
+
+        // Search for the song
+        const { videos } = await yts(text);
+        if (!videos || videos.length === 0) {
+            return dave.sendMessage(m.chat, { 
+                text: "No songs found!"
+            }, { quoted: m });
+        }
+
+        // Send loading message
+        await dave.sendMessage(m.chat, {
+            text: "_Please wait your download is in progress_"}, { quoted: m 
+        });
+
+        // Get the first video result
+        const video = videos[0];
+        const urlYt = video.url;
+
+        // Fetch audio data from API
+        const response = await axios.get(`https://api.privatezia.biz.id/api/downloader/ytmp3?url=${urlYt}`);
+        const data = response.data;
+
+        if (!data || !data.status || !data.result || !data.result.downloadUrl) {
+            return dave.sendMessage(m.chat, { 
+                text: "Failed to fetch audio from the API. Please try again later."
+            }, { quoted: m });
+        }
+
+        const audioUrl = data.result.downloadUrl;
+        const title = data.result.title;
+
+        // Send the audio
+        await dave.sendMessage(m.chat, {
+            audio: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: m });
+
+        //successful react ✔️
+        await dave.sendMessage(m.chat, { 
+            react: { text: '✔️', key: m.key } 
+        });
+
+    } catch (error) {
+        console.error('Error in play command:', error);
+        await dave.sendMessage(m.chat, { 
+            text: "Download failed. Please try again later."
+        }, { quoted: m });
+
+        //err react ❌
+        await dave.sendMessage(m.chat, {
+            react: { text: '❌', key: m.key }
+        });
     }
-
-    let video;
-    if (text.includes('youtube.com') || text.includes('youtu.be')) {
-      video = { url: text };
-    } else {
-      const search = await yts(text);
-      if (!search || !search.videos.length) {
-        return reply('No results found.');
-      }
-      video = search.videos[0];
-    }
-
-    await dave.sendMessage(m.chat, {
-      image: { url: video.thumbnail },
-      caption: `🎵 Downloading: *${video.title}*\n⏱ Duration: ${video.timestamp}`,
-    }, { quoted: m });
-
-    const apiUrl = `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(video.url)}&format=mp3`;
-
-    const res = await axios.get(apiUrl, {
-      timeout: 30000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
-
-    if (!res.data || !res.data.result || !res.data.result.download) {
-      throw new Error('Izumi API failed to return a valid link.');
-    }
-
-    const audioData = res.data.result;
-    await dave.sendMessage(m.chat, {
-      audio: { url: audioData.download },
-      mimetype: 'audio/mpeg',
-      fileName: `${audioData.title || video.title || 'song'}.mp3`,
-      ptt: false,
-    }, { quoted: m });
-  } catch (err) {
-    console.error('Song command error:', err);
-    reply('_failed to download song_');
-  }
 };
 
 daveplug.help = ['play'];
