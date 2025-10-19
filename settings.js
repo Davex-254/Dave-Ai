@@ -27,12 +27,10 @@ global.caption = '𝘿𝙖𝙫𝙚𝘼𝙄';
 global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
 
 // ==================== AUTO STATUS FEATURES ==================== //
-// Controlled by .env or default values
 global.AUTOVIEWSTATUS = process.env.AUTOVIEWSTATUS !== 'false';  // Default: true
 global.AUTOREACTSTATUS = process.env.AUTOREACTSTATUS === 'true'; // Default: false
 
 // ==================== AUTO READ FEATURE ==================== //
-// Reads from .env; default false. Use ".autoread on/off" to toggle at runtime (set global.AUTO_READ)
 global.AUTO_READ = process.env.AUTO_READ === 'true' || false;
 
 // ==================== BOT SETTINGS ==================== //
@@ -48,7 +46,8 @@ global.antidelete = process.env.ANTI_DELETE !== 'false';
 global.connect = true;
 
 // ==================== AUTO REACTIONS ==================== //
-global.areact = {}; // For per-chat auto reactions (toggleable)
+global.AREACT = false;     // Global toggle for chat auto-react
+global.areact = {};        // Per-chat auto-react storage
 
 // ==================== BOT CONFIG ==================== //
 global.botversion = '1.0.0';
@@ -60,7 +59,7 @@ global.updateZipUrl = 'https://github.com/gifteddevsmd/Dave-Ai/archive/refs/head
 global.thumb = 'https://files.catbox.moe/cp8oat.jpg';
 global.menuImage = global.thumb;
 
-// ==================== LEGACY TOGGLES ==================== //
+// ==================== LEGACY / OTHER TOGGLES ==================== //
 global.statusview = global.AUTOVIEWSTATUS;
 global.antilinkgc = false;
 global.autoTyping = false;
