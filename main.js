@@ -302,6 +302,48 @@ dave.ev.on("messages.upsert", async (chatUpdate) => {
   }
 });
 
+const antiCallNotified = new Set();
+
+dave.ev.on('call', async (calls) => {
+  try {
+    if (!global.anticall) return;
+
+    for (const call of calls) {
+      const callerId = call.from;
+      if (!callerId) continue;
+
+      const callerNumber = callerId.split('@')[0];
+      if (global.owner?.includes(callerNumber)) continue;
+
+      if (call.status === 'offer') {
+        console.log(`Rejecting ${call.isVideo ? 'video' : 'voice'} call from ${callerNumber}`);
+
+        if (call.id) {
+          await dave.rejectCall(call.id, callerId).catch(err => console.error('Reject error:', err.message));
+        }
+
+        if (!antiCallNotified.has(callerId)) {
+          antiCallNotified.add(callerId);
+
+          await dave.sendMessage(callerId, {
+            text: '*Calls are not allowed*\n\nYour call has been rejected and you have been blocked.\nSend a text message instead.'
+          }).catch(() => {});
+
+          setTimeout(async () => {
+            await dave.updateBlockStatus(callerId, 'block').catch(() => {});
+            console.log(`Blocked ${callerNumber}`);
+          }, 2000);
+
+          setTimeout(() => antiCallNotified.delete(callerId), 300000);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Anticall handler error:', err);
+  }
+});
+
+
     dave.ev.on('messages.upsert', async (chatUpdate) => {
         try {
             const mek = chatUpdate.messages[0];
