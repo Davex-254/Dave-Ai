@@ -1,5 +1,17 @@
+const fs = require('fs');
+const path = './library/database/antiedit.json'; // Store state persistently
 const processedEdits = new Map();
 const EDIT_COOLDOWN = 5000;
+
+// Load saved state
+let antieditState = 'off';
+if (fs.existsSync(path)) {
+    try {
+        const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+        antieditState = data.antiedit || 'off';
+    } catch {}
+}
+global.antiedit = antieditState;
 
 let daveplug = async (m, { daveshown, dave, args, reply }) => {
     if (!daveshown) return reply('❌ This command is owner only.');
@@ -16,12 +28,19 @@ let daveplug = async (m, { daveshown, dave, args, reply }) => {
 
     global.antiedit = mode;
 
+    // Save state to JSON
+    try {
+        fs.writeFileSync(path, JSON.stringify({ antiedit: mode }, null, 2));
+    } catch (err) {
+        console.error('Failed to save antiedit state:', err.message);
+    }
+
     if (mode === 'on') return reply('✅ _Antiedit enabled in all chats_');
     if (mode === 'private') return reply('✅ _Antiedit enabled - alerts will be sent privately_');
     return reply('❌ _Antiedit disabled_');
 };
 
-// Event listener for Baileys
+// Event listener for Baileys (kept intact)
 daveplug.before = async (m, { dave }) => {
     if (!daveplug._listenerRegistered) {
         dave.ev.on('messages.update', async (updates) => {
@@ -32,8 +51,7 @@ daveplug.before = async (m, { dave }) => {
 
                 for (const update of updates) {
                     const { key, update: updateData } = update;
-                    
-                    // Baileys message.update structure validation
+
                     if (!key?.remoteJid || !key?.id) continue;
                     if (!updateData?.message) continue;
 
@@ -41,31 +59,22 @@ daveplug.before = async (m, { dave }) => {
                     const sender = key.participant || key.remoteJid;
                     const senderKey = `${chat}-${sender}`;
 
-                    // Skip bot's own messages
                     const botNumber = dave.user.id.split(':')[0];
                     if (sender.includes(botNumber)) continue;
 
-                    // Baileys edit detection - check multiple paths
                     let editedMsg = null;
-                    let originalMsg = null;
 
-                    // Method 1: editedMessage wrapper (most common)
                     if (updateData.message.editedMessage) {
                         editedMsg = updateData.message.editedMessage.message;
-                        originalMsg = updateData.message.editedMessage.message; // New content
-                    }
-                    
-                    // Method 2: protocolMessage with REVOKE type
-                    else if (updateData.message.protocolMessage) {
+                    } else if (updateData.message.protocolMessage) {
                         const proto = updateData.message.protocolMessage;
-                        if (proto.type === 1 && proto.editedMessage) { // Type 1 = MESSAGE_EDIT
+                        if (proto.type === 1 && proto.editedMessage) {
                             editedMsg = proto.editedMessage;
                         }
                     }
 
                     if (!editedMsg) continue;
 
-                    // Cooldown check
                     if (processedEdits.has(senderKey)) {
                         const last = processedEdits.get(senderKey);
                         if (now - last.timestamp < EDIT_COOLDOWN) continue;
@@ -77,22 +86,15 @@ daveplug.before = async (m, { dave }) => {
                         const content = msg[type];
 
                         switch (type) {
-                            case 'conversation': 
-                                return content;
+                            case 'conversation': return content;
                             case 'extendedTextMessage': 
                                 return content.text + (content.contextInfo?.quotedMessage ? ' _(with quote)_' : '');
-                            case 'imageMessage': 
-                                return `📷 Image: ${content.caption || '_No caption_'}`;
-                            case 'videoMessage': 
-                                return `🎥 Video: ${content.caption || '_No caption_'}`;
-                            case 'documentMessage': 
-                                return `📄 Document: ${content.fileName || '_No filename_'}`;
-                            case 'audioMessage':
-                                return `🎵 Audio message`;
-                            case 'stickerMessage':
-                                return `🎨 Sticker`;
-                            default: 
-                                return `[${type.replace('Message', '')}]`;
+                            case 'imageMessage': return `📷 Image: ${content.caption || '_No caption_'}`;
+                            case 'videoMessage': return `🎥 Video: ${content.caption || '_No caption_'}`;
+                            case 'documentMessage': return `📄 Document: ${content.fileName || '_No filename_'}`;
+                            case 'audioMessage': return `🎵 Audio message`;
+                            case 'stickerMessage': return `🎨 Sticker`;
+                            default: return `[${type.replace('Message', '')}]`;
                         }
                     };
 
@@ -100,7 +102,6 @@ daveplug.before = async (m, { dave }) => {
                     const senderName = sender.split('@')[0];
                     const chatType = chat.endsWith('@g.us') ? 'Group' : 'Private';
 
-                    // Get group name if in group
                     let chatName = chatType;
                     if (chat.endsWith('@g.us')) {
                         try {
@@ -128,7 +129,7 @@ daveplug.before = async (m, { dave }) => {
                     });
 
                     processedEdits.set(senderKey, { timestamp: now });
-                    
+
                     console.log(`📝 Antiedit: ${senderName} edited message in ${chatName}`);
                 }
 
