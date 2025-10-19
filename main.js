@@ -235,12 +235,18 @@ ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
     // ================== AUTO VIEW + AUTO REACT SYSTEM ==================
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// Enable these globally
+global.AUTOVIEWSTATUS = true;
+global.AUTOREACTSTATUS = false;
+
 dave.ev.on("messages.upsert", async (chatUpdate) => {
   try {
     const mek = chatUpdate.messages[0];
     if (!mek || !mek.message) return;
 
-    // Ignore protocol, ephemeral, or reaction messages
+    console.log("📱 Received from:", mek.key.remoteJid);
+
+    // Ignore certain message types
     if (
       mek.message?.protocolMessage ||
       mek.message?.ephemeralMessage ||
@@ -249,38 +255,40 @@ dave.ev.on("messages.upsert", async (chatUpdate) => {
 
     const fromJid = mek.key.participant || mek.key.remoteJid;
 
-    // 🟢 STATUS HANDLING (auto view + auto react)
-    if (mek.key.remoteJid === "status@broadcast") {
+    // 🟢 STATUS HANDLING
+    if (mek.key.remoteJid.includes("status") || mek.key.remoteJid === "status@broadcast") {
+      console.log("🎯 STATUS UPDATE DETECTED");
 
-      // 👁️ Auto View — ON by default
+      // 👁️ Auto View Status
       if (global.AUTOVIEWSTATUS) {
-        await dave.readMessages([mek.key]);
-        console.log(`👁️ Viewed status from ${fromJid.split('@')[0]}`);
-      }
-
-      // 💫 Auto React — OFF by default
-      if (global.AUTOREACTSTATUS) {
-        const safeEmojis = ['💙', '💚', '💜', '❤️', '🤍', '💯', '🔥', '🌟', '🎉', '💫'];
-        const randomEmoji = safeEmojis[Math.floor(Math.random() * safeEmojis.length)];
-
-        await delay(250); // Let WhatsApp register the view first
-
         try {
-          await dave.sendMessage("status@broadcast", {
-            react: { text: randomEmoji, key: mek.key }
-          });
-
-          console.log(`✅ Reacted to ${fromJid.split('@')[0]}'s status with ${randomEmoji}`);
-        } catch (err) {
-          console.error("❌ Status react failed:", err.message);
+          await dave.readMessages([mek.key]);
+          console.log(`✅ Viewed status from ${fromJid.split('@')[0]}`);
+        } catch (viewErr) {
+          console.error("❌ Failed to view status:", viewErr.message);
         }
       }
 
+      // 💫 Auto React to Status
+      if (global.AUTOREACTSTATUS) {
+        await delay(1000); // Wait a bit longer
+        const safeEmojis = ['💙', '💚', '💜', '❤️', '🤍', '💯', '🔥', '🌟', '🎉', '💫'];
+        const randomEmoji = safeEmojis[Math.floor(Math.random() * safeEmojis.length)];
+
+        try {
+          await dave.sendMessage(mek.key.remoteJid, {
+            react: { text: randomEmoji, key: mek.key }
+          });
+          console.log(`✅ Reacted with ${randomEmoji}`);
+        } catch (reactErr) {
+          console.error("❌ React failed:", reactErr.message);
+        }
+      }
       return;
     }
 
   } catch (err) {
-    console.error("AutoView/React Error:", err);
+    console.error("🚨 AutoView/React System Error:", err);
   }
 });
 
