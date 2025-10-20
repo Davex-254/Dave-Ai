@@ -1,44 +1,140 @@
-const yts = require('yt-search');
-const axios = require('axios');
-
-let daveplug = async (m, { dave, reply, text }) => {
+const _0x44c9e6 = _0x3628;
+(function (_0x15de0b, _0x270498) {
+    const _0x3a054e = _0x3628;
+    const _0x1d6218 = _0x15de0b();
+    while (!![]) {
+        try {
+            const _0x251b7e = -parseInt(_0x3a054e(0x207)) / 0x1 + parseInt(_0x3a054e(0x1fc)) / 0x2 * (parseInt(_0x3a054e(0x1f7)) / 0x3) + parseInt(_0x3a054e(0x1f9)) / 0x4 * (parseInt(_0x3a054e(0x20d)) / 0x5) + parseInt(_0x3a054e(0x1f1)) / 0x6 + parseInt(_0x3a054e(0x200)) / 0x7 + -parseInt(_0x3a054e(0x1f8)) / 0x8 * (-parseInt(_0x3a054e(0x205)) / 0x9) + -parseInt(_0x3a054e(0x20f)) / 0xa * (parseInt(_0x3a054e(0x1f5)) / 0xb);
+            if (_0x251b7e === _0x270498) {
+                break;
+            } else {
+                _0x1d6218['push'](_0x1d6218['shift']());
+            }
+        } catch (_0x58fe7a) {
+            _0x1d6218['push'](_0x1d6218['shift']());
+        }
+    }
+}(_0x3019, 0x1df8b));
+const yts = require('\x79\x74\x2d\x73\x65\x61\x72\x63\x68');
+const axios = require(_0x44c9e6(0x1fa));
+function _0x3628(_0xee162f, _0x50c3b2) {
+    const _0x3019a8 = _0x3019();
+    _0x3628 = function (_0x362830, _0x55f1ab) {
+        _0x362830 = _0x362830 - 0x1f1;
+        let _0x4edf66 = _0x3019a8[_0x362830];
+        if (_0x3628['\x56\x64\x4b\x51\x77\x6a'] === undefined) {
+            var _0x471e84 = function (_0x38d5b9) {
+                const _0x46802e = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+                let _0x2b23e9 = '';
+                let _0x2e5ee7 = '';
+                for (let _0x1b9db7 = 0x0, _0x2c8907, _0x2c6f40, _0x5b7732 = 0x0; _0x2c6f40 = _0x38d5b9['\x63\x68\x61\x72\x41\x74'](_0x5b7732++); ~_0x2c6f40 && (_0x2c8907 = _0x1b9db7 % 0x4 ? _0x2c8907 * 0x40 + _0x2c6f40 : _0x2c6f40, _0x1b9db7++ % 0x4) ? _0x2b23e9 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0xff & _0x2c8907 >> (-0x2 * _0x1b9db7 & 0x6)) : 0x0) {
+                    _0x2c6f40 = _0x46802e['\x69\x6e\x64\x65\x78\x4f\x66'](_0x2c6f40);
+                }
+                for (let _0x45a894 = 0x0, _0x58581d = _0x2b23e9['\x6c\x65\x6e\x67\x74\x68']; _0x45a894 < _0x58581d; _0x45a894++) {
+                    _0x2e5ee7 += '\x25' + ('\x30\x30' + _0x2b23e9['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x45a894)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x10))['\x73\x6c\x69\x63\x65'](-0x2);
+                }
+                return decodeURIComponent(_0x2e5ee7);
+            };
+            _0x3628['\x4b\x4b\x72\x64\x56\x41'] = _0x471e84;
+            _0xee162f = arguments;
+            _0x3628['\x56\x64\x4b\x51\x77\x6a'] = !![];
+        }
+        const _0x19dc73 = _0x3019a8[0x0];
+        const _0x3a531f = _0x362830 + _0x19dc73;
+        const _0x51e4cb = _0xee162f[_0x3a531f];
+        if (!_0x51e4cb) {
+            _0x4edf66 = _0x3628['\x4b\x4b\x72\x64\x56\x41'](_0x4edf66);
+            _0xee162f[_0x3a531f] = _0x4edf66;
+        } else {
+            _0x4edf66 = _0x51e4cb;
+        }
+        return _0x4edf66;
+    };
+    return _0x3628(_0xee162f, _0x50c3b2);
+}
+function _0x3019() {
+    const _0x3d4068 = [
+        '\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x72\x6d\x41\x77\x35\x52',
+        '\x43\x4d\x76\x57\x42\x67\x66\x4a\x7a\x71',
+        '\x76\x78\x6e\x48\x7a\x32\x75\x36\x69\x63\x35\x57\x42\x67\x66\x35\x69\x64\x58\x5a\x42\x32\x35\x4e\x69\x67\x35\x48\x42\x77\x75\x2b\x63\x4b\x76\x34\x79\x77\x31\x57\x42\x67\x75\x36\x69\x63\x35\x57\x42\x67\x66\x35\x69\x65\x35\x56\x44\x63\x62\x6d\x41\x77\x54\x4c\x69\x66\x76\x5a',
+        '\x44\x4d\x4c\x4b\x7a\x77\x39\x5a',
+        '\x6f\x64\x4b\x30\x6e\x74\x62\x41\x42\x4e\x48\x31\x41\x4c\x43',
+        '\x7a\x32\x76\x30',
+        '\x6f\x74\x75\x30\x6f\x64\x69\x57\x41\x30\x39\x33\x71\x30\x6a\x49',
+        '\x7a\x78\x48\x57\x42\x33\x6a\x30\x43\x57',
+        '\x41\x68\x72\x30\x43\x68\x6d\x36\x6c\x59\x39\x55\x42\x32\x39\x49\x43\x59\x31\x48\x43\x67\x4b\x55\x44\x67\x39\x57\x6c\x32\x72\x50\x43\x68\x72\x56\x6c\x33\x4c\x30\x72\x67\x57\x5a\x70\x32\x58\x50\x42\x4d\x53\x39',
+        '\x6a\x4d\x7a\x56\x43\x4d\x31\x48\x44\x64\x31\x54\x43\x64\x6d',
+        '\x44\x4d\x4c\x4b\x7a\x77\x39\x6a\x7a\x61',
+        '\x44\x67\x66\x4e\x43\x57',
+        '\x44\x67\x4c\x54\x7a\x77\x39\x31\x44\x61',
+        '\x6d\x74\x6d\x57\x6d\x4a\x47\x58\x6d\x65\x4c\x4d\x72\x65\x48\x6b\x79\x57',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x68\x6a\x4c\x44\x68\x6a\x50\x7a\x78\x7a\x4c\x69\x68\x72\x4f\x7a\x73\x62\x6e\x75\x64\x6d\x47\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x71\x47\x42\x67\x4c\x55\x41\x59\x34\x47\x75\x67\x58\x4c\x79\x78\x6e\x4c\x69\x68\x72\x59\x45\x73\x62\x48\x7a\x32\x66\x50\x42\x49\x62\x53\x79\x78\x72\x4c\x43\x49\x34',
+        '\x7a\x4d\x4c\x53\x7a\x75\x35\x48\x42\x77\x75',
+        '\x44\x67\x4c\x30\x42\x67\x75',
+        '\x6e\x74\x76\x6f\x42\x4b\x7a\x4d\x72\x66\x61',
+        '\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x71',
+        '\x6e\x74\x6d\x33\x6e\x5a\x76\x70\x76\x76\x76\x77\x79\x30\x71',
+        '\x6d\x5a\x6a\x79\x76\x32\x76\x52\x74\x32\x71',
+        '\x6d\x5a\x7a\x75\x41\x77\x54\x6d\x77\x4b\x65',
+        '\x79\x78\x48\x50\x42\x33\x6d',
+        '\x7a\x78\x6a\x59\x42\x33\x69',
+        '\x6e\x4b\x54\x71\x76\x4d\x6e\x52\x71\x47',
+        '\x43\x32\x76\x55\x7a\x65\x31\x4c\x43\x33\x6e\x48\x7a\x32\x75',
+        '\x79\x32\x39\x54\x42\x77\x66\x55\x7a\x61',
+        '\x7a\x67\x39\x4a\x44\x77\x31\x4c\x42\x4e\x71',
+        '\x6f\x64\x47\x33\x6f\x74\x6d\x32\x45\x78\x6e\x71\x76\x4b\x6a\x55',
+        '\x42\x77\x4c\x54\x7a\x78\x72\x35\x43\x67\x75',
+        '\x6c\x4d\x31\x57\x6d\x57',
+        '\x41\x67\x76\x53\x43\x61',
+        '\x43\x67\x58\x48\x45\x71',
+        '\x6d\x74\x65\x57\x6e\x4a\x79\x30\x71\x4c\x48\x7a\x45\x4d\x31\x34',
+        '\x7a\x67\x66\x30\x79\x71',
+        '\x6e\x5a\x43\x33\x6f\x75\x66\x51\x79\x4d\x76\x31\x42\x57',
+        '\x79\x78\x76\x4b\x41\x77\x38\x56\x42\x78\x62\x4c\x7a\x57'
+    ];
+    _0x3019 = function () {
+        return _0x3d4068;
+    };
+    return _0x3019();
+}
+let daveplug = async (_0x2e5ee7, {
+    dave: _0x1b9db7,
+    reply: _0x2c8907,
+    text: _0x2c6f40
+}) => {
+    const _0x3933d7 = _0x44c9e6;
     try {
-        if (!text) {
-            return reply('Usage: .play <song name>\nExample: .play Not Like Us');
+        if (!_0x2c6f40) {
+            return _0x2c8907(_0x3933d7(0x20b));
         }
-
-        const search = await yts(text);
-        const video = search.videos[0];
-
-        if (!video) {
-            return reply('No songs found for your query. Please try different keywords.');
+        const _0x5b7732 = await yts(_0x2c6f40);
+        const _0x45a894 = _0x5b7732[_0x3933d7(0x20c)][0x0];
+        if (!_0x45a894) {
+            return _0x2c8907('\x4e\x6f\x20\x73\x6f\x6e\x67\x73\x20\x66\x6f\x75\x6e\x64\x20\x66\x6f\x72\x20\x79\x6f\x75\x72\x20\x71\x75\x65\x72\x79\x2e\x20\x50\x6c\x65\x61\x73\x65\x20\x74\x72\x79\x20\x64\x69\x66\x66\x65\x72\x65\x6e\x74\x20\x6b\x65\x79\x77\x6f\x72\x64\x73\x2e');
         }
-
-        const safeTitle = video.title.replace(/[\\/:*?"<>|]/g, '');
-        const fileName = `${safeTitle}.mp3`;
-        const apiURL = `https://noobs-api.top/dipto/ytDl3?link=${encodeURIComponent(video.videoId)}&format=mp3`;
-
-        const response = await axios.get(apiURL, { timeout: 30000 });
-        const data = response.data;
-
-        if (!data.downloadLink) {
-            return reply('Failed to retrieve the MP3 download link. Please try again later.');
+        const _0x58581d = _0x45a894[_0x3933d7(0x1f4)][_0x3933d7(0x20a)](/[\\/:*?"<>|]/g, '');
+        const _0x2e87bb = _0x58581d + _0x3933d7(0x202);
+        const _0x56ebad = _0x3933d7(0x211) + encodeURIComponent(_0x45a894[_0x3933d7(0x213)]) + _0x3933d7(0x212);
+        const _0x1b6187 = {};
+        _0x1b6187[_0x3933d7(0x215)] = 0x7530;
+        const _0x40a217 = await axios[_0x3933d7(0x20e)](_0x56ebad, _0x1b6187);
+        const _0xf5ce69 = _0x40a217[_0x3933d7(0x206)];
+        if (!_0xf5ce69[_0x3933d7(0x209)]) {
+            return _0x2c8907(_0x3933d7(0x1f2));
         }
-
-        await dave.sendMessage(m.chat, {
-            document: { url: data.downloadLink },
-            mimetype: 'audio/mpeg',
-            fileName: fileName
-        }, { quoted: m });
-
-    } catch (err) {
-        console.error('Play error:', err.message);
-        reply('An error occurred while processing your request');
+        const _0x12034d = {};
+        _0x12034d['\x75\x72\x6c'] = _0xf5ce69['\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x4c\x69\x6e\x6b'];
+        const _0x6d07be = {};
+        _0x6d07be[_0x3933d7(0x1ff)] = _0x12034d;
+        _0x6d07be[_0x3933d7(0x201)] = _0x3933d7(0x208);
+        _0x6d07be[_0x3933d7(0x1f3)] = _0x2e87bb;
+        await _0x1b9db7[_0x3933d7(0x1fd)](_0x2e5ee7['\x63\x68\x61\x74'], _0x6d07be, { '\x71\x75\x6f\x74\x65\x64': _0x2e5ee7 });
+    } catch (_0x270cb5) {
+        console[_0x3933d7(0x1fb)]('\x50\x6c\x61\x79\x20\x65\x72\x72\x6f\x72\x3a', _0x270cb5[_0x3933d7(0x1f6)]);
+        _0x2c8907('\x41\x6e\x20\x65\x72\x72\x6f\x72\x20\x6f\x63\x63\x75\x72\x72\x65\x64\x20\x77\x68\x69\x6c\x65\x20\x70\x72\x6f\x63\x65\x73\x73\x69\x6e\x67\x20\x79\x6f\x75\x72\x20\x72\x65\x71\x75\x65\x73\x74');
     }
 };
-
-daveplug.help = ['play'];
-daveplug.tags = ['downloader'];
-daveplug.command = ['play'];
-
-module.exports = daveplug;
+daveplug[_0x44c9e6(0x203)] = [_0x44c9e6(0x204)];
+daveplug[_0x44c9e6(0x214)] = ['\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x65\x72'];
+daveplug[_0x44c9e6(0x1fe)] = ['\x70\x6c\x61\x79'];
+module[_0x44c9e6(0x210)] = daveplug;
