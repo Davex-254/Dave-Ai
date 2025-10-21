@@ -11,9 +11,9 @@ let daveplug = async (m, { dave, replymenu, menu }) => {
         const ping = end - start
 
         // Reload menu to get fresh data with ping
-        delete require.cache[require.resolve('../listmenu/menulist')]
-        const menuModule = require('../listmenu/menulist')
-        
+        delete require.cache[require.resolve('./library/listmenu/menulist')]
+const menuModule = require('./library/listmenu/menulist')
+
         // Build menu with dynamic data
         let data = JSON.parse(fs.readFileSync('./library/lib/database/messageCount.json'))
         const uptimeFormatted = formatTime(process.uptime())
