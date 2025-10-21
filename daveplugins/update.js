@@ -1,1 +1,237 @@
-const a0_0x187bd6=a0_0x21fe;(function(_0x112718,_0x5f3296){const _0x5c72a5=a0_0x21fe,_0x23034a=_0x112718();while(!![]){try{const _0x468eed=-parseInt(_0x5c72a5(0xe9))/0x1*(parseInt(_0x5c72a5(0xf0))/0x2)+parseInt(_0x5c72a5(0x135))/0x3*(parseInt(_0x5c72a5(0xf5))/0x4)+-parseInt(_0x5c72a5(0x112))/0x5+-parseInt(_0x5c72a5(0xd8))/0x6*(-parseInt(_0x5c72a5(0xe6))/0x7)+-parseInt(_0x5c72a5(0xf8))/0x8*(-parseInt(_0x5c72a5(0xda))/0x9)+parseInt(_0x5c72a5(0x117))/0xa+-parseInt(_0x5c72a5(0x116))/0xb*(parseInt(_0x5c72a5(0x132))/0xc);if(_0x468eed===_0x5f3296)break;else _0x23034a['push'](_0x23034a['shift']());}catch(_0x414bc1){_0x23034a['push'](_0x23034a['shift']());}}}(a0_0x8358,0x2ffb7));const {exec}=require('child_process'),fs=require('fs'),path=require(a0_0x187bd6(0xfa)),axios=require(a0_0x187bd6(0xe0));global['updateZipUrl']=a0_0x187bd6(0x107);const githubRepo='gifteddevsmd/Dave-Ai';function a0_0x21fe(_0x3ee763,_0x39c62b){const _0x83585b=a0_0x8358();return a0_0x21fe=function(_0x21fe0a,_0x24bfd4){_0x21fe0a=_0x21fe0a-0xd6;let _0x5e37ae=_0x83585b[_0x21fe0a];if(a0_0x21fe['KPBrIq']===undefined){var _0x55574f=function(_0x18921c){const _0x39cd54='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x39a808='',_0x121fcc='';for(let _0x503373=0x0,_0x2aa312,_0x10ccf6,_0x1e1c9f=0x0;_0x10ccf6=_0x18921c['charAt'](_0x1e1c9f++);~_0x10ccf6&&(_0x2aa312=_0x503373%0x4?_0x2aa312*0x40+_0x10ccf6:_0x10ccf6,_0x503373++%0x4)?_0x39a808+=String['fromCharCode'](0xff&_0x2aa312>>(-0x2*_0x503373&0x6)):0x0){_0x10ccf6=_0x39cd54['indexOf'](_0x10ccf6);}for(let _0x2ef82b=0x0,_0x591859=_0x39a808['length'];_0x2ef82b<_0x591859;_0x2ef82b++){_0x121fcc+='%'+('00'+_0x39a808['charCodeAt'](_0x2ef82b)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x121fcc);};a0_0x21fe['nTTBEO']=_0x55574f,_0x3ee763=arguments,a0_0x21fe['KPBrIq']=!![];}const _0x40e538=_0x83585b[0x0],_0x2df394=_0x21fe0a+_0x40e538,_0xfb5c7d=_0x3ee763[_0x2df394];return!_0xfb5c7d?(_0x5e37ae=a0_0x21fe['nTTBEO'](_0x5e37ae),_0x3ee763[_0x2df394]=_0x5e37ae):_0x5e37ae=_0xfb5c7d,_0x5e37ae;},a0_0x21fe(_0x3ee763,_0x39c62b);}function run(_0x18921c){return new Promise((_0x39cd54,_0x39a808)=>{exec(_0x18921c,{'windowsHide':!![]},(_0x121fcc,_0x503373,_0x2aa312)=>{const _0x20ffd3=a0_0x21fe;if(_0x121fcc)return _0x39a808(_0x2aa312||_0x503373||_0x121fcc[_0x20ffd3(0x115)]);_0x39cd54(_0x503373[_0x20ffd3(0xef)]());});});}async function downloadFile(_0x10ccf6,_0x1e1c9f){const _0x16d8f2=a0_0x187bd6,_0x2ef82b=fs[_0x16d8f2(0x12f)](_0x1e1c9f),_0x591859=await axios({'url':_0x10ccf6,'method':_0x16d8f2(0xe3),'responseType':_0x16d8f2(0x119),'maxRedirects':0x5,'timeout':0xea60});return _0x591859[_0x16d8f2(0x134)][_0x16d8f2(0xe8)](_0x2ef82b),new Promise((_0x43522a,_0x2f7276)=>{const _0x4399f1=_0x16d8f2;_0x2ef82b['on'](_0x4399f1(0x139),_0x43522a),_0x2ef82b['on']('error',_0x2f7276),_0x591859[_0x4399f1(0x134)]['on'](_0x4399f1(0xff),_0x2f7276),setTimeout(()=>_0x2f7276(new Error(_0x4399f1(0x130))),0x1d4c0);});}async function extractZip(_0x33b560,_0x4c4e02){const _0x2f1421=a0_0x187bd6;if(!fs[_0x2f1421(0x10c)](_0x4c4e02))fs[_0x2f1421(0xdd)](_0x4c4e02,{'recursive':!![]});try{await run('unzip\x20-o\x20\x22'+_0x33b560+_0x2f1421(0x12b)+_0x4c4e02+'\x22');}catch{const _0x13799b=require(_0x2f1421(0xf7)),_0x4e7267=new _0x13799b(_0x33b560);_0x4e7267['extractAllTo'](_0x4c4e02,!![]);}}async function copyRecursive(_0x45b1dd,_0x31e5ed,_0x1f99e7=[]){const _0x50d296=a0_0x187bd6;if(!fs[_0x50d296(0x10c)](_0x31e5ed))fs['mkdirSync'](_0x31e5ed,{'recursive':!![]});const _0x290d71=fs[_0x50d296(0xdb)](_0x45b1dd);for(const _0x4e203a of _0x290d71){if(_0x1f99e7[_0x50d296(0x125)](_0x4e203a))continue;const _0x2b6972=path[_0x50d296(0x124)](_0x45b1dd,_0x4e203a),_0x313ec2=path[_0x50d296(0x124)](_0x31e5ed,_0x4e203a),_0x3148c4=fs[_0x50d296(0x11d)](_0x2b6972);if(_0x3148c4[_0x50d296(0x138)]())await copyRecursive(_0x2b6972,_0x313ec2,_0x1f99e7);else fs[_0x50d296(0x111)](_0x2b6972,_0x313ec2);}}function backupSettings(_0x23402e=path['join'](process['cwd'](),a0_0x187bd6(0x101))){const _0x3c65d6=a0_0x187bd6;if(!fs['existsSync'](_0x23402e))return null;return fs['readFileSync'](_0x23402e,_0x3c65d6(0xf9));}function mergeSettings(_0x25be96,_0x205a2a){const _0x5958d9=a0_0x187bd6;let _0x46a3e9=_0x205a2a||_0x5958d9(0x122);for(const [_0x32f399,_0x54e94e]of Object[_0x5958d9(0x10f)](_0x25be96)){const _0x570150=new RegExp(_0x5958d9(0x103)+_0x32f399+_0x5958d9(0x12a));_0x570150[_0x5958d9(0xe1)](_0x46a3e9)?_0x46a3e9=_0x46a3e9[_0x5958d9(0x118)](_0x570150,'global.'+_0x32f399+'\x20=\x20'+JSON[_0x5958d9(0xf1)](_0x54e94e)+';'):_0x46a3e9+='\x0aglobal.'+_0x32f399+_0x5958d9(0x114)+JSON[_0x5958d9(0xf1)](_0x54e94e)+';';}return _0x46a3e9;}function a0_0x8358(){const _0x33f47a=['y3jLyxrLv3jPDgvtDhjLyw0','rg93BMXVywqGDgLTzw91Da','zxHWB3j0CW','mtK1nLv4Bhftta','rxH0CMfJDgvKigzVBgrLCIbUB3qGzM91BMqU','zgf0yq','mZaZotnJs2rUu0W','DxbKyxrLwMLWvxjS','cKj5oIa','AxneAxjLy3rVCNK','zMLUAxnO','A2v5','zgf0zq','C2vUze1LC3nHz2u','CgfYC2u','C2vZC2LVBG','CM1tEw5J','mtH5qMTxzNe','DhjPBq','owDnqK5zvG','CMvHzgrPCLn5BMm','t3DUzxiGB25SEsbJB21Tyw5KlG','BwTKAxjtEw5J','Dg1Wx3vWzgf0zq','C3LZDgvT','yxHPB3m','DgvZDa','cKrHDgu6ia','r0vu','DxbKyxrL','CMvZDgfYDa','ndm5mZqXquPyuKnl','vxbKyxrLievYCM9YoG','CgLWzq','ndeXqNjAwg1J','vvbeqvrfx1Pjuf9vuKW','Ahr0Chm6lY9HCgKUz2L0AhvIlMnVBs9YzxbVCY8','C2HH','yxv0Ag9Y','rxH0CMfJDgLUzYb1CgrHDguUlI4','Dg9tDhjPBMC','mtmZnLH4u2jutG','C3rYAw5NAwz5','AgvSCa','BgvUz3rO','l2nVBw1PDhmVBwfPBG','mJbjveXWyuC','u3rHCNrPBMCGDxbKyxrLihbYB2nLC3mUlI4','ywrTlxPPCa','mty3nda4oer6sKv5vW','DxrMoa','Cgf0Aa','cGPmyxrLC3qGq29TBwL0oGO','DMvYC2LVBG','Dg9mB2nHBgvtDhjPBMC','vxbKyxrLigzHAwXLzdOG','zxjYB3i','vxnHz2u6cI51CgrHDguGlsbvCgrHDguGyM90cI5Yzxn0yxj0ic0GuMvZDgfYDcbIB3q','C2v0DgLUz3mUANm','qvvut1jfqunuu1rbvfvt','z2XVyMfSxc4','y29TBwfUza','zxHPDa','yw50AwnHBgW','Ahr0Chm6lY9JB2rLBg9Hzc5NAxrODwiUy29Tl2DPzNrLzgrLDNnTzc9eyxzLlufPl3PPCc9YzwzZl2HLywrZl21HAw4','zgf0ywjHC2uUANnVBG','y29TBwL0','rgf2zufjlvvWzgf0zxi','y29UzMLNlMPZ','zxHPC3rZu3LUyW','tM8GwKLqifvstcbJB25MAwD1CMvKigLUigDSB2jHBc51CgrHDgvAAxbvCMWU','y2HHDa','zw50CMLLCW','qvvut19srufe','y29WEuzPBgvtEw5J','nJiYnJGWufbOqM1L','lMDPDa','id0G','BwvZC2fNzq','mtiXquDYEMzq','mtq5mJa3mfLvtLzUrq','CMvWBgfJzq','C3rYzwfT','C3rHCNq','C3vIC3rYAw5N','BMfTzq','Bhn0yxrtEw5J','cLjLCg9ZAxrVCNK6ia','rgf2zufjifvWzgf0zxikcKn1CNjLBNqGDMvYC2LVBJOGDG','cGPtDgf0Dxm6ierVD25SB2fKAw5NihvWzgf0zs4UlG','cLniqtOG','lY8Gqxv0BY1Nzw5LCMf0zwqGC2v0DgLUz3mk','zw52','AM9PBG','Aw5JBhvKzxm','qvvut1zjrvDtvefuvvm','uMvZDgfYDgLUzYbeyxzLquKUlI4','Bg9N','y3DK','xhmQps4QoW','iIaTzcaI','qvjfqunu','cGPszxn0yxj0Aw5NigjVDc4UlG','DgfNCW'];a0_0x8358=function(){return _0x33f47a;};return a0_0x8358();}async function getLatestCommitInfo(){const _0x4a7d6c=a0_0x187bd6;try{const _0x3fbf65=_0x4a7d6c(0xeb)+githubRepo+_0x4a7d6c(0xf4),_0x7ddb3=await axios['get'](_0x3fbf65,{'headers':{'User-Agent':_0x4a7d6c(0x10a)},'timeout':0x2710}),_0x16f890=_0x7ddb3[_0x4a7d6c(0x134)];return{'message':_0x16f890['commit'][_0x4a7d6c(0x115)],'author':_0x16f890[_0x4a7d6c(0x109)][_0x4a7d6c(0xed)][_0x4a7d6c(0x11c)],'date':new Date(_0x16f890[_0x4a7d6c(0x109)][_0x4a7d6c(0xed)][_0x4a7d6c(0x13b)])[_0x4a7d6c(0xfd)](),'sha':_0x16f890[_0x4a7d6c(0xec)][_0x4a7d6c(0x11b)](0x0,0x7)};}catch{return null;}}async function updateViaZip(_0x2d9bfa,_0x45b1c1){const _0x2f206d=a0_0x187bd6,_0x4bff7a=(global[_0x2f206d(0x136)]||process[_0x2f206d(0x123)][_0x2f206d(0xea)]||'')[_0x2f206d(0xd9)]();if(!_0x4bff7a)throw new Error(_0x2f206d(0x10d));const _0x38ba4b=path['join'](process[_0x2f206d(0x129)](),'settings.js'),_0x385285=backupSettings(_0x38ba4b),_0xf01d56={'AUTOVIEWSTATUS':global[_0x2f206d(0x126)],'AUTOREACTSTATUS':global[_0x2f206d(0x102)],'AUTO_READ':global[_0x2f206d(0x110)],'anticall':global[_0x2f206d(0x106)],'AREACT':global[_0x2f206d(0x12c)]};let _0x212299='unknown';try{const _0x4cb27b=JSON[_0x2f206d(0x13d)](fs['readFileSync'](path[_0x2f206d(0x124)](process[_0x2f206d(0x129)](),'package.json')));_0x212299=_0x4cb27b[_0x2f206d(0xfc)]||'unknown';}catch{}const _0x4d2b48=await getLatestCommitInfo();let _0x262f2f='';_0x4d2b48&&(_0x262f2f=_0x2f206d(0xfb)+_0x4d2b48[_0x2f206d(0x115)]+_0x2f206d(0x137)+_0x4d2b48['author']+_0x2f206d(0xe2)+_0x4d2b48[_0x2f206d(0x13b)]+_0x2f206d(0x121)+_0x4d2b48['sha']);const _0x2fc23d=path[_0x2f206d(0x124)](process[_0x2f206d(0x129)](),_0x2f206d(0xde)),_0x5966e8=path['join'](_0x2fc23d,'update.zip'),_0x20d87f=path[_0x2f206d(0x124)](_0x2fc23d,'update_extract');if(fs[_0x2f206d(0x10c)](_0x2fc23d))fs[_0x2f206d(0xd7)](_0x2fc23d,{'recursive':!![],'force':!![]});fs[_0x2f206d(0xdd)](_0x2fc23d,{'recursive':!![]});let _0x2243f0;try{_0x2243f0=await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1[_0x2f206d(0x10e)],{'text':_0x2f206d(0x11f)+_0x212299+_0x2f206d(0x11e)+githubRepo+_0x262f2f+_0x2f206d(0x120)}),await downloadFile(_0x4bff7a,_0x5966e8),await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1[_0x2f206d(0x10e)],{'text':_0x2f206d(0xee),'edit':_0x2243f0[_0x2f206d(0x13a)]}),await extractZip(_0x5966e8,_0x20d87f);const _0x8b926d=fs[_0x2f206d(0xdb)](_0x20d87f),_0x249e6e=_0x8b926d[_0x2f206d(0xf3)]===0x1?path['join'](_0x20d87f,_0x8b926d[0x0]):_0x20d87f;if(!fs[_0x2f206d(0x10c)](_0x249e6e))throw new Error(_0x2f206d(0x133));await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1[_0x2f206d(0x10e)],{'text':'Copying\x20files...','edit':_0x2243f0[_0x2f206d(0x13a)]}),await copyRecursive(_0x249e6e,process['cwd'](),['node_modules',_0x2f206d(0x113),_0x2f206d(0xd6),'tmp',_0x2f206d(0xde),'.env',_0x2f206d(0x10b),_0x2f206d(0x101),_0x2f206d(0x108)]);const _0x32c763=mergeSettings(_0xf01d56,_0x385285);fs['writeFileSync'](_0x38ba4b,_0x32c763,_0x2f206d(0xf9)),await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1['chat'],{'text':'Installing\x20dependencies...','edit':_0x2243f0[_0x2f206d(0x13a)]}),await run('npm\x20install\x20--omit=dev\x20--no-audit\x20--no-fund');if(fs[_0x2f206d(0x10c)](_0x2fc23d))fs[_0x2f206d(0xd7)](_0x2fc23d,{'recursive':!![],'force':!![]});await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1[_0x2f206d(0x10e)],{'text':'✅\x20Update\x20Complete!\x0a\x0aDaveAI\x20updated\x20successfully.\x0aFrom:\x20v'+_0x212299+'\x0aTo:\x20latest\x20version'+_0x262f2f+_0x2f206d(0x12d),'edit':_0x2243f0['key']}),setTimeout(()=>{const _0xde72d3=_0x2f206d;console[_0xde72d3(0x128)]('Restarting\x20DaveAI...'),process['exit'](0x0);},0xbb8);}catch(_0x3c070d){if(fs['existsSync'](_0x2fc23d))fs[_0x2f206d(0xd7)](_0x2fc23d,{'recursive':!![],'force':!![]});_0x2243f0&&await _0x2d9bfa[_0x2f206d(0x13c)](_0x45b1c1[_0x2f206d(0x10e)],{'text':'❌\x20Update\x20Failed\x0a\x0aError:\x20'+_0x3c070d['message'],'edit':_0x2243f0[_0x2f206d(0x13a)]});throw _0x3c070d;}}let daveplug=async(_0x8cdc65,{dave:_0x1b22ba,daveshown:_0x45655c,command:_0x4d2a6d,reply:_0x424934})=>{const _0x5d7e8c=a0_0x187bd6;if(!_0x45655c)return _0x424934(_0x5d7e8c(0xdc));try{if(_0x4d2a6d===_0x5d7e8c(0xe4))await _0x424934(_0x5d7e8c(0xf6)),await updateViaZip(_0x1b22ba,_0x8cdc65);else _0x4d2a6d===_0x5d7e8c(0xe5)||_0x4d2a6d===_0x5d7e8c(0x11a)?(await _0x424934(_0x5d7e8c(0x127)),setTimeout(()=>process[_0x5d7e8c(0x105)](0x0),0x7d0)):_0x424934(_0x5d7e8c(0x100));}catch(_0x35ae41){console['error'](_0x5d7e8c(0xe7),_0x35ae41),_0x424934(_0x5d7e8c(0xfe)+(_0x35ae41[_0x5d7e8c(0x115)]||_0x35ae41));}};daveplug[a0_0x187bd6(0xf2)]=[a0_0x187bd6(0xe4),'restart',a0_0x187bd6(0x11a)],daveplug[a0_0x187bd6(0x12e)]=[a0_0x187bd6(0xdf)],daveplug[a0_0x187bd6(0x104)]=[a0_0x187bd6(0xe4),'restart',a0_0x187bd6(0x11a)],module[a0_0x187bd6(0x131)]=daveplug;
+const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+
+global.updateZipUrl = "https://codeload.github.com/gifteddevsmd/Dave-Ai/zip/refs/heads/main";
+const githubRepo = "gifteddevsmd/Dave-Ai";
+
+function run(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
+      if (err) return reject(stderr || stdout || err.message);
+      resolve(stdout.toString());
+    });
+  });
+}
+
+async function downloadFile(url, dest) {
+  const writer = fs.createWriteStream(dest);
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'stream',
+    maxRedirects: 5,
+    timeout: 60000
+  });
+  response.data.pipe(writer);
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+    response.data.on('error', reject);
+    setTimeout(() => reject(new Error('Download timeout')), 120000);
+  });
+}
+
+async function extractZip(zipPath, outDir) {
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+  try {
+    await run(`unzip -o "${zipPath}" -d "${outDir}"`);
+  } catch {
+    const AdmZip = require('adm-zip');
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(outDir, true);
+  }
+}
+
+async function copyRecursive(src, dest, ignore = []) {
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+  const entries = fs.readdirSync(src);
+
+  for (const entry of entries) {
+    if (ignore.includes(entry)) continue;
+    const s = path.join(src, entry);
+    const d = path.join(dest, entry);
+    const stat = fs.lstatSync(s);
+
+    try {
+      if (stat.isDirectory()) {
+        await copyRecursive(s, d, ignore);
+      } else {
+        fs.copyFileSync(s, d);
+      }
+    } catch (copyErr) {
+      console.error(`Failed to copy ${s}:`, copyErr.message);
+    }
+  }
+}
+
+function backupCriticalFiles() {
+  const backupDir = path.join(process.cwd(), 'backup_' + Date.now());
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+
+  const criticalFiles = ['settings.js', 'config.js', '.env', 'database.json'];
+  criticalFiles.forEach(file => {
+    if (fs.existsSync(file)) {
+      try {
+        fs.copyFileSync(file, path.join(backupDir, file));
+      } catch (err) {
+        console.error(`Failed to backup ${file}:`, err.message);
+      }
+    }
+  });
+  return backupDir;
+}
+
+async function getLatestCommitInfo() {
+  try {
+    const url = `https://api.github.com/repos/${githubRepo}/commits/main`;
+    const res = await axios.get(url, { headers: { 'User-Agent': 'DaveAI-Updater' }, timeout: 10000 });
+    const commit = res.data;
+    return {
+      message: commit.commit.message,
+      author: commit.commit.author.name,
+      date: new Date(commit.commit.author.date).toLocaleString(),
+      sha: commit.sha.substring(0, 7)
+    };
+  } catch {
+    return null;
+  }
+}
+
+function safetyChecks() {
+  if (!fs.existsSync('./package.json')) {
+    throw new Error('Not in project root directory - missing package.json');
+  }
+  try {
+    fs.accessSync('.', fs.constants.W_OK);
+  } catch {
+    throw new Error('No write permissions in current directory');
+  }
+}
+
+async function checkForUpdates() {
+  try {
+    const currentPkg = JSON.parse(fs.readFileSync('./package.json'));
+    const response = await axios.get(`https://raw.githubusercontent.com/${githubRepo}/main/package.json`);
+    const latestPkg = response.data;
+
+    return currentPkg.version !== latestPkg.version;
+  } catch {
+    return true;
+  }
+}
+
+async function updateViaZip(dave, m) {
+  safetyChecks();
+
+  const zipUrl = (global.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
+  if (!zipUrl) throw new Error('No ZIP URL configured in global.updateZipUrl.');
+
+  const backupDir = backupCriticalFiles();
+
+  let currentVersion = 'unknown';
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')));
+    currentVersion = pkg.version || 'unknown';
+  } catch {}
+
+  const updateNeeded = await checkForUpdates();
+  if (!updateNeeded) {
+    await dave.sendMessage(m.chat, { text: '✅ Already on latest version! No update needed.' });
+    return;
+  }
+
+  const latestCommit = await getLatestCommitInfo();
+  let changelog = '';
+  if (latestCommit) {
+    changelog = `\n\nLatest Commit:\n${latestCommit.message}\nBy: ${latestCommit.author}\nDate: ${latestCommit.date}\nSHA: ${latestCommit.sha}`;
+  }
+
+  const tmpDir = path.join(process.cwd(), 'tmp_update');
+  const zipPath = path.join(tmpDir, 'update.zip');
+  const extractTo = path.join(tmpDir, 'update_extract');
+
+  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  let statusMessage;
+  try {
+    statusMessage = await dave.sendMessage(m.chat, {
+      text: `🔄 DaveAI Updater\n\nCurrent: v${currentVersion}\nRepository: ${githubRepo}${changelog}\n\nStatus: Downloading update...`
+    });
+
+    await downloadFile(zipUrl, zipPath);
+    await dave.sendMessage(m.chat, { text: '📦 Extracting update...', edit: statusMessage.key });
+    await extractZip(zipPath, extractTo);
+
+    const folders = fs.readdirSync(extractTo);
+    const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
+    if (!fs.existsSync(mainFolder)) throw new Error('Extracted folder not found.');
+
+    await dave.sendMessage(m.chat, { text: '📁 Copying files...', edit: statusMessage.key });
+    await copyRecursive(mainFolder, process.cwd(), [
+      'node_modules', '.git', 'session', 'tmp', 'tmp_update', 'backup_*', '.env', 'config.js', 'settings.js', 'database.json'
+    ]);
+
+    // ⚠️ Skip overwriting settings.js entirely
+    console.log('Preserving existing settings.js — no overwrite performed.');
+
+    await dave.sendMessage(m.chat, { text: '📦 Installing dependencies...', edit: statusMessage.key });
+    await run('npm install --omit=dev --no-audit --no-fund --silent');
+
+    await dave.sendMessage(m.chat, {
+      text: `✅ Update Complete!\n\nDaveAI updated successfully.\nFrom: v${currentVersion}\nTo: latest version${changelog}\n\nRestarting bot in 3 seconds...`,
+      edit: statusMessage.key
+    });
+
+    setTimeout(() => process.exit(0), 3000);
+
+  } catch (error) {
+    if (fs.existsSync(backupDir)) {
+      try {
+        await copyRecursive(backupDir, process.cwd());
+        console.log('Restored from backup due to update failure');
+      } catch (restoreErr) {
+        console.error('Failed to restore backup:', restoreErr);
+      }
+    }
+
+    if (statusMessage) {
+      await dave.sendMessage(m.chat, {
+        text: `❌ Update Failed\n\nError: ${error.message}\n\nRestored from backup.`,
+        edit: statusMessage.key
+      });
+    }
+    throw error;
+  } finally {
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+    if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true });
+  }
+}
+
+let daveplug = async (m, { dave, daveshown, command, reply }) => {
+  if (!daveshown) return reply('Owner only command.');
+  try {
+    if (command === 'update') {
+      await reply('Starting update process...');
+      await updateViaZip(dave, m);
+    } else if (command === 'restart' || command === 'start') {
+      await reply('Restarting DaveAI...');
+      setTimeout(() => process.exit(0), 2000);
+    } else {
+      reply('Usage:\n.update - Update bot\n.restart - Restart bot');
+    }
+  } catch (err) {
+    console.error('Update Error:', err);
+    reply(`Update failed: ${err.message || err}`);
+  }
+};
+
+daveplug.help = ['update', 'restart', 'start'];
+daveplug.tags = ['system'];
+daveplug.command = ['update', 'restart', 'start'];
+
+module.exports = daveplug;
