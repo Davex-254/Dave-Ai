@@ -15,7 +15,7 @@ let daveplug = async (m, { dave, replymenu, menu }) => {
         const menuModule = require('../listmenu/menulist')
         
         // Build menu with dynamic data
-        let data = JSON.parse(require('fs').readFileSync('./library/database/messageCount.json'))
+        let data = JSON.parse(fs.readFileSync('./library/lib/database/messageCount.json'))
         const uptimeFormatted = formatTime(process.uptime())
         const currentMode = data.isPublic ? 'Public' : 'Private'
         const hostName = detectHost()
