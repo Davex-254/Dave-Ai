@@ -13,20 +13,16 @@ const {
 } = require("@whiskeysockets/baileys")
 
 // Utilities
+const fs = require('fs')
+const chalk = require('chalk')
+const path = require('path')
+const axios = require('axios')
+const os = require('os')
+const PhoneNumber = require('awesome-phonenumber')
 const NodeCache = require("node-cache")
 const pino = require("pino")
 const readline = require("readline")
-const fs = require('fs')
-const path = require('path')
-const chalk = require('chalk')
-const axios = require('axios')
-const _ = require('lodash')
-const moment = require('moment-timezone')
-const PhoneNumber = require('awesome-phonenumber')
-const { Boom } = require('@hapi/boom')
 const { rmSync } = require('fs')
-const os = require('os')
-const FileType = require('file-type')
 
 // Custom modules
 const { color } = require('./library/lib/color')
@@ -54,12 +50,20 @@ const loginFile = path.join(sessionDir, 'login.json')
 const envPath = path.join(__dirname, '.env')
 
 // Logging function
-function log(message, colorName = 'white', isError = false) {
-    const xprefix = chalk.magenta.bold('[ Dave - Ai ]')
-    const logFunc = isError ? console.error : console.log
-    const coloredMessage = chalk[colorName](message)
-    logFunc(`${xprefix} ${coloredMessage}`)
+function log(message, color = 'white', isError = false) {
+    const xprefix = chalk.magenta.bold('[ Dave-Ai ]');
+    const logFunc = isError ? console.error : console.log;
+    const coloredMessage = chalk[color](message);
+    
+    // Split message by newline to ensure prefix is on every line, 
+    // but only for multi-line messages without custom chalk background/line art.
+    if (message.includes('\n') || message.includes('════')) {
+        logFunc(xprefix, coloredMessage);
+    } else {
+         logFunc(`${xprefix} ${coloredMessage}`);
+    }
 }
+// -------------------------------------------
 
 // Message backup functions
 function loadStoredMessages() {
