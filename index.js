@@ -880,7 +880,7 @@ dave.ev.on('creds.update', saveCreds);
 
     // 3. Junk File Cleanup  
     const junkInterval = 30_000;
-    setInterval(() => cleanupJunkFiles(XeonBotInc), junkInterval); 
+    setInterval(() => cleanupJunkFiles(dave), junkInterval); 
 
     return dave;
 }
