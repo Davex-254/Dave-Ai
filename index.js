@@ -1,6 +1,6 @@
 require('./settings')
 require('dotenv').config()
-
+const config = require('./config');
 // Core Baileys imports
 const {
     default: makeWASocket,
