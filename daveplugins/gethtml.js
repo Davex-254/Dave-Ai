@@ -1,14 +1,15 @@
 const path = require('path');
 const fs = require('fs');
+const fetch = require('node-fetch');
 
-let daveplug = async (m, { prefix, dave, reply, command, text }) => {
-    if (!text) return reply(`💠 Example: ${prefix + command} https://example.com`);
+let daveplug = async (m, { xprefix, dave, reply, command, text }) => {
+    if (!text) return reply(`Example: ${xprefix + command} https://example.com`);
 
     try {
-        let res = await fetch(text);
-        if (!res.ok) return m.reply('💠 Invalid URL');
-        let html = await res.text();
+        const res = await fetch(text);
+        if (!res.ok) return reply('Invalid URL or failed to fetch page.');
 
+        const html = await res.text();
         const filePath = path.join(__dirname, '../library/lib/html_dump.html');
         fs.writeFileSync(filePath, html);
 
@@ -18,15 +19,15 @@ let daveplug = async (m, { prefix, dave, reply, command, text }) => {
             fileName: 'results.html'
         }, { quoted: m });
 
-        fs.unlinkSync(filePath); 
-    } catch (e) {
-        console.error(e);
-        m.reply('💠 An error has occurred\n' + e.message);
+        fs.unlinkSync(filePath);
+    } catch (err) {
+        console.error(err);
+        reply('An error occurred: ' + err.message);
     }
 };
 
 daveplug.help = ['getweb'];
-daveplug.tags = ['scweb'];
+daveplug.tags = ['web'];
 daveplug.command = ['gethtml'];
 
 module.exports = daveplug;
