@@ -1111,19 +1111,6 @@ case 'setdp': {
 }
 break
 
-case 'ping': {
-  const start = Date.now();
-  const sentMsg = await m.reply('Pinging...');
-  const latency = Date.now() - start;
-
-  await dave.sendMessage(
-    m.chat,
-    { text: `Pong! Latency: ${latency}ms` },
-    { edit: sentMsg.key }
-  );
-}
-break
-
 case 'claude-al': {
   try {
     const question = args.join(' ');
@@ -1159,6 +1146,124 @@ case 'claude-al': {
   } catch (err) {
     console.error('Claude Command Error:', err);
     await reply(`Failed to fetch response from Claude API.\nError: ${err.message}`);
+  }
+}
+break
+
+case 'bass':
+case 'blown':
+case 'deep':
+case 'earrape':
+case 'fast':
+case 'fat':
+case 'nightcore':
+case 'reverse':
+case 'robot':
+case 'slow':
+case 'smooth':
+case 'tupai': {
+    try {
+        if (!m.quoted || !m.quoted.message) return reply(`Reply to an audio you want to convert with the caption ${prefix + command}`);
+        
+        const quotedMsg = m.quoted.message;
+        const isAudio = quotedMsg.audioMessage || 
+                       quotedMsg.pttMessage || 
+                       (quotedMsg.extendedTextMessage && quotedMsg.extendedTextMessage.contextInfo && 
+                        (quotedMsg.extendedTextMessage.contextInfo.quotedMessage.audioMessage || 
+                         quotedMsg.extendedTextMessage.contextInfo.quotedMessage.pttMessage));
+        
+        if (!isAudio) return reply('Reply to an audio file!');
+
+        dave.sendMessage(m.chat, { react: { text: "⏱️", key: m.key } }).catch(() => {});
+
+        let set;
+        if (/bass/.test(command)) set = '-af equalizer=f=54:width_type=o:width=2:g=20';
+        if (/blown/.test(command)) set = '-af acrusher=.1:1:64:0:log';
+        if (/deep/.test(command)) set = '-af atempo=4/4,asetrate=44500*2/3';
+        if (/earrape/.test(command)) set = '-af volume=12';
+        if (/fast/.test(command)) set = '-filter:a "atempo=1.63,asetrate=44100"';
+        if (/fat/.test(command)) set = '-filter:a "atempo=1.6,asetrate=22100"';
+        if (/nightcore/.test(command)) set = '-filter:a atempo=1.06,asetrate=44100*1.25';
+        if (/reverse/.test(command)) set = '-filter_complex "areverse"';
+        if (/robot/.test(command)) set = '-filter_complex "afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75"';
+        if (/slow/.test(command)) set = '-filter:a "atempo=0.7,asetrate=44100"';
+        if (/smooth/.test(command)) set = '-filter:v "minterpolate=\'mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps=120\'"';
+        if (/tupai/.test(command)) set = '-filter:a "atempo=0.5,asetrate=65100"';
+
+        (async () => {
+            const mediaPath = await dave.downloadAndSaveMediaMessage(m.quoted);
+            const outputPath = getRandom('.mp3');
+
+            exec(`ffmpeg -i "${mediaPath}" ${set} "${outputPath}"`, (err) => {
+                fs.unlinkSync(mediaPath);
+
+                if (err) return reply('Error processing audio: ' + err.message);
+
+                const buffer = fs.readFileSync(outputPath);
+                dave.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/mpeg' }, { quoted: m })
+                    .catch(() => {})
+                    .finally(() => fs.unlinkSync(outputPath));
+            });
+        })();
+
+    } catch (error) {
+        console.error('Audio effect error:', error);
+        reply('Something went wrong while processing the audio.');
+    }
+}
+break
+
+case 'checktime':
+case 'time': {
+    try {
+        if (!text) return reply("Please provide a city or country name to check the local time.");
+        await reply(`Checking local time for ${text}...`);
+        const tzRes = await fetch(`https://worldtimeapi.org/api/timezone`);
+        const timezones = await tzRes.json();
+        const match = timezones.find(tz => tz.toLowerCase().includes(text.toLowerCase()));
+        if (!match) return reply(`Could not find timezone for ${text}.`);
+        const res = await fetch(`https://worldtimeapi.org/api/timezone/${match}`);
+        const data = await res.json();
+        const datetime = new Date(data.datetime);
+        const hours = datetime.getHours();
+        const greeting = hours < 12 ? "Good Morning" : hours < 18 ? "Good Afternoon" : "Good Evening";
+        const timeText = `
+Local Time in ${text}
+${greeting}
+Timezone: ${data.timezone}
+Time: ${datetime.toLocaleTimeString()}
+Date: ${datetime.toDateString()}
+Uptime: ${formatUptime(process.uptime())}`;
+        await reply(timeText);
+    } catch (e) {
+        console.error("checktime error:", e);
+        reply("Unable to fetch time for that city.");
+    }
+}
+break
+
+case 'ssweb': {
+  try {
+    const url = args[0];
+    if (!url) return reply('Please provide a valid URL.\nExample: .ssweb https://example.com');
+
+    await reply('Capturing screenshot, please wait...');
+
+    const fetch = require('node-fetch');
+    const apiUrl = `https://api.zenzxz.my.id/api/tools/ssweb?url=${encodeURIComponent(url)}`;
+
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    const buffer = await res.buffer();
+
+    await dave.sendMessage(from, {
+      image: buffer,
+      caption: `Screenshot of: ${url}`,
+    }, { quoted: m });
+
+  } catch (err) {
+    console.error('ssweb Command Error:', err);
+    await reply(`Failed to capture screenshot.\nError: ${err.message}`);
   }
 }
 break
@@ -1362,13 +1467,16 @@ let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
                     }
                       break; //==================================================//     
         case 'uptime':
+case 'runtime': {
   const uptime = process.uptime();
   const days = Math.floor(uptime / (24 * 3600));
   const hours = Math.floor((uptime % (24 * 3600)) / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
-  dave.sendMessage(m.chat, { text: `Uptime: ${days}d ${hours}h ${minutes}m ${seconds}s` });
-  break;
+  dave.sendMessage(m.chat, { text: `𝘿𝙖𝙫𝙚𝘼𝙄 Runtime: ${days}d ${hours}h ${minutes}m ${seconds}s` });
+}
+break
+
 //==================================================//           
       
   case 'ping': {
@@ -1657,16 +1765,6 @@ case 'getpastebin': case 'getpb': {
 }
 break;
 
-// === SCREENSHOT WEBSITE ===
-case 'ssweb': case 'ss-web': {
-    if (!text) return reply(`Example: ${command} https://example.com`);
-    await dave.sendMessage(
-        m.chat,
-        { image: { url: `https://api.siputzx.my.id/api/tools/ssweb?url=${text}&theme=light&device=desktop` }, caption: footer },
-        { quoted: m }
-    );
-}
-break;
 
 // === SNACKVIDEO DOWNLOADER ===
 case 'snackvideo': case 'sv': {
@@ -2268,76 +2366,6 @@ break;
 
 
 // ================== OFF SETTINGS ==================
-case "off": {
-  if (!daveshown) return reply(mess.owner);
-  await dave.sendMessage(m.chat, {
-    buttons: [
-      {
-        buttonId: 'action',
-        buttonText: { displayText: 'This is an interactiveMeta message' },
-        type: 4,
-        nativeFlowInfo: {
-          name: 'single_select',
-          paramsJson: JSON.stringify({
-            title: '',
-            sections: [
-              {
-                title: `© ${namaBot}`,
-                rows: [
-                  { title: 'Disable AutoTyping', description: 'false', id: `.autotyping off` },
-                  { title: 'Disable AutoRead', description: 'false', id: `.autoread off` },
-                  { title: 'Disable AutoBio', description: 'false', id: `.autobio off` },
-                  { title: 'Disable Prayer Reminder', description: 'false', id: `.autosholat off` },
-                  { title: 'Disable Group Only Mode', description: 'false', id: `.onlygc off` }
-                ]
-              }
-            ]
-          })
-        }
-      }
-    ],
-    headerType: 1,
-    viewOnce: true,
-    text: "Bot Settings"
-  }, { quoted: m });
-}
-break;
-
-// ================== ON SETTINGS ==================
-case "on": {
-  if (!daveshown) return reply(mess.owner);
-  await dave.sendMessage(m.chat, {
-    buttons: [
-      {
-        buttonId: 'action',
-        buttonText: { displayText: 'This is an interactiveMeta message' },
-        type: 4,
-        nativeFlowInfo: {
-          name: 'single_select',
-          paramsJson: JSON.stringify({
-            title: '',
-            sections: [
-              {
-                title: `© ${namaBot}`,
-                rows: [
-                  { title: 'Enable AutoTyping', description: 'true', id: `.autotyping on` },
-                  { title: 'Enable AutoRead', description: 'true', id: `.autoread on` },
-                  { title: 'Enable AutoBio', description: 'true', id: `.autobio on` },
-                  { title: 'Enable Prayer Reminder', description: 'true', id: `.autosholat on` },
-                  { title: 'Enable Group Only Mode', description: 'true', id: `.onlygc on` }
-                ]
-              }
-            ]
-          })
-        }
-      }
-    ],
-    headerType: 1,
-    viewOnce: true,
-    text: "Bot Settings"
-  }, { quoted: m });
-}
-break;
 
 // ================== LIST CASE ==================
 case "listcase": {
@@ -2741,63 +2769,7 @@ break;
 break;
 //==================================================//   
 
-case 'take': {
-    const { Sticker, StickerTypes } = require('wa-sticker-formatter');
-    const fs = require('fs');
-    const { exec } = require('child_process');
 
-    let msgR = m.quoted ? m.quoted : m;
-    if (!msgR) return reply('Quote an image, a short video, or a sticker to change watermark.');
-
-    let media;
-    let isVideo = false;
-
-    if (msgR.imageMessage) {
-        media = msgR.imageMessage;
-    } else if (msgR.videoMessage) {
-        media = msgR.videoMessage;
-        isVideo = true;
-    } else if (msgR.stickerMessage) {
-        media = msgR.stickerMessage;
-    } else {
-        return reply('This is neither a sticker, image, nor a video.');
-    }
-
-    let filePath = await dave.downloadAndSaveMediaMessage(media);
-
-    if (isVideo) {
-        // Convert video to webp sticker-compatible format using ffmpeg
-        let tempOutput = `./temp_${Date.now()}.webp`;
-        await new Promise((resolve, reject) => {
-            exec(
-                `ffmpeg -y -i ${filePath} -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,format=rgba" -t 10 ${tempOutput}`,
-                (err) => {
-                    fs.unlinkSync(filePath);
-                    if (err) return reject(err);
-                    resolve();
-                }
-            );
-        });
-        filePath = tempOutput;
-    }
-
-    const sticker = new Sticker(filePath, {
-        pack: pushname,
-        author: pushname,
-        type: StickerTypes.FULL,
-        categories: ["🤩", "🎉"],
-        id: "12345",
-        quality: 70,
-        background: "transparent",
-    });
-
-    const buffer = await sticker.toBuffer();
-    await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
-
-    // Clean up temp file
-    fs.unlinkSync(filePath);
-}
-break;
 //==================================================//   
 
 
@@ -2830,41 +2802,128 @@ case "group-vcf": {
 }
 break;
 
-case "apk":
-case "app": {
-    if (!text) return reply("Where is the app name?");
+case 'take': {
+    const { Sticker, StickerTypes } = require('wa-sticker-formatter');
+    const fs = require('fs');
+    const { exec } = require('child_process');
+
+    let msgR = m.quoted ? m.quoted : m;
+    if (!msgR) return reply('Quote an image, a short video, or a sticker to change watermark.');
+
+    let media;
+    let isVideo = false;
+    let isSticker = false;
+
+    // Check the message structure properly
+    if (msgR.message?.imageMessage) {
+        media = msgR.message.imageMessage;
+    } else if (msgR.message?.videoMessage) {
+        media = msgR.message.videoMessage;
+        isVideo = true;
+    } else if (msgR.message?.stickerMessage) {
+        media = msgR.message.stickerMessage;
+        isSticker = true;
+    } else if (msgR.imageMessage) {
+        media = msgR.imageMessage;
+    } else if (msgR.videoMessage) {
+        media = msgR.videoMessage;
+        isVideo = true;
+    } else if (msgR.stickerMessage) {
+        media = msgR.stickerMessage;
+        isSticker = true;
+    } else {
+        console.log('Message structure:', JSON.stringify(msgR, null, 2)); // Debug log
+        return reply('This is neither a sticker, image, nor a video.');
+    }
 
     try {
-        let kyuu = await fetchJson(`https://bk9.fun/search/apk?q=${text}`);
-        let tylor = await fetchJson(`https://bk9.fun/download/apk?id=${kyuu.BK9[0].id}`);
+        let filePath = await dave.downloadAndSaveMediaMessage(media);
 
-        await dave.sendMessage(
-            m.chat,
-            {
-                document: { url: tylor.BK9.dllink },
-                fileName: tylor.BK9.name,
-                mimetype: "application/vnd.android.package-archive",
-                contextInfo: {
-                    externalAdReply: {
-                        title: `𝘿𝙖𝙫𝙚𝘼𝙄`,
-                        body: `${tylor.BK9.name}`,
-                        thumbnailUrl: `${tylor.BK9.icon}`,
-                        sourceUrl: `${tylor.BK9.dllink}`,
-                        mediaType: 2,
-                        showAdAttribution: true,
-                        renderLargerThumbnail: false
+        // If it's already a sticker, we might need to convert it differently
+        if (isSticker) {
+            // For stickers, we can use the file directly or convert if needed
+            const sticker = new Sticker(filePath, {
+                pack: pushname,
+                author: pushname,
+                type: StickerTypes.FULL,
+                categories: ["🤩", "🎉"],
+                id: "12345",
+                quality: 70,
+                background: "transparent",
+            });
+
+            const buffer = await sticker.toBuffer();
+            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
+        } 
+        else if (isVideo) {
+            // Convert video to webp sticker-compatible format using ffmpeg
+            let tempOutput = `./temp_${Date.now()}.webp`;
+            await new Promise((resolve, reject) => {
+                exec(
+                    `ffmpeg -y -i "${filePath}" -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,format=rgba" -t 10 "${tempOutput}"`,
+                    (err) => {
+                        if (err) {
+                            console.error('FFmpeg error:', err);
+                            return reject(err);
+                        }
+                        resolve();
                     }
-                }
-            }, { quoted: m }
-        );
+                );
+            });
+            
+            // Delete original file
+            fs.unlinkSync(filePath);
+            filePath = tempOutput;
+
+            const sticker = new Sticker(filePath, {
+                pack: pushname,
+                author: pushname,
+                type: StickerTypes.FULL,
+                categories: ["🤩", "🎉"],
+                id: "12345",
+                quality: 70,
+                background: "transparent",
+            });
+
+            const buffer = await sticker.toBuffer();
+            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
+        } 
+        else {
+            // For images
+            const sticker = new Sticker(filePath, {
+                pack: pushname,
+                author: pushname,
+                type: StickerTypes.FULL,
+                categories: ["🤩", "🎉"],
+                id: "12345",
+                quality: 70,
+                background: "transparent",
+            });
+
+            const buffer = await sticker.toBuffer();
+            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
+        }
+
+        // Clean up temp file
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
     } catch (error) {
-        console.error('Error in apk command:', error);
-        reply('Failed to fetch APK. Please try again with a different app name.');
+        console.error('Error in take command:', error);
+        reply('Error processing media. Please try again.');
+        
+        // Clean up any temporary files on error
+        try {
+            if (filePath && fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        } catch (cleanupError) {
+            console.error('Cleanup error:', cleanupError);
+        }
     }
 }
 break;
-
-
 
 
 
