@@ -1466,16 +1466,7 @@ let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
 
                     }
                       break; //==================================================//     
-        case 'uptime':
-case 'runtime': {
-  const uptime = process.uptime();
-  const days = Math.floor(uptime / (24 * 3600));
-  const hours = Math.floor((uptime % (24 * 3600)) / 3600);
-  const minutes = Math.floor((uptime % 3600) / 60);
-  const seconds = Math.floor(uptime % 60);
-  dave.sendMessage(m.chat, { text: `𝘿𝙖𝙫𝙚𝘼𝙄 Runtime: ${days}d ${hours}h ${minutes}m ${seconds}s` });
-}
-break
+        
 
 //==================================================//           
       
@@ -2121,42 +2112,73 @@ break;
 }
 break;
 //==================================================//   
+case 'playdoc': {
+    try {
+        const tempDir = path.join(__dirname, "temp");
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
 
-// === Set Bot Profile Picture ===
-case 'setppbot': {
-  if (!daveshown) return reply(mess.owner);
-  if (!/image/.test(mime))
-    return reply(`Send or reply to an image with caption ${prefix + command}`);
-  if (/webp/.test(mime))
-    return reply(`Send or reply to an image with caption ${prefix + command}`);
+        if (!args.length) return reply(`Provide a song name!\nExample: ${command} Not Like Us`);
 
-  var medis = await dave.downloadAndSaveMediaMessage(quoted, 'ppbot.jpeg');
-  if (text == 'full') {
-    var { img } = await generateProfilePicture(medis);
-    await dave.query({
-      tag: 'iq',
-      attrs: {
-        to: botNumber,
-        type: 'set',
-        xmlns: 'w:profile:picture'
-      },
-      content: [
-        {
-          tag: 'picture',
-          attrs: { type: 'image' },
-          content: img
-        }
-      ]
-    });
-    fs.unlinkSync(medis);
-    reply("Done updating bot profile picture (full mode)");
-  } else {
-    await dave.updateProfilePicture(botNumber, { url: medis });
-    fs.unlinkSync(medis);
-    reply(mess.done);
-  }
+        const query = args.join(" ");
+        if (query.length > 100) return reply(`Song name too long! Max 100 chars.`);
+
+        await reply("Searching for the track...");
+
+        const searchResult = await (await yts(`${query} official`)).videos[0];
+        if (!searchResult) return reply("Couldn't find that song. Try another one!");
+
+        const video = searchResult;
+        const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(video.url)}`;
+        const response = await axios.get(apiUrl);
+        const apiData = response.data;
+
+        if (!apiData.status || !apiData.result || !apiData.result.downloadUrl) throw new Error("API failed to fetch track!");
+
+        const timestamp = Date.now();
+        const fileName = `audio_${timestamp}.mp3`;
+        const filePath = path.join(tempDir, fileName);
+
+        const audioResponse = await axios({
+            method: "get",
+            url: apiData.result.downloadUrl,
+            responseType: "stream",
+            timeout: 600000
+        });
+
+        const writer = fs.createWriteStream(filePath);
+        audioResponse.data.pipe(writer);
+        await new Promise((resolve, reject) => {
+            writer.on("finish", resolve);
+            writer.on("error", reject);
+        });
+
+        if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0)
+            throw new Error("Download failed or empty file!");
+
+        await dave.sendMessage(
+            from,
+            { text: `Downloaded ${apiData.result.title || video.title}` },
+            { quoted: m }
+        );
+
+        await dave.sendMessage(
+            from,
+            {
+                document: { url: filePath },
+                mimetype: "audio/mpeg",
+                fileName: `${(apiData.result.title || video.title).substring(0, 100)}.mp3`
+            },
+            { quoted: m }
+        );
+
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+    } catch (error) {
+        console.error("Play command error:", error);
+        return reply(`Error: ${error.message}`);
+    }
 }
-break;
+break
 
 // === Join Group by Link ===
 case 'joingc':
@@ -2341,10 +2363,10 @@ case 'upswtag': {
   let argsText = text.split(',').map(a => a.trim());
   if (argsText.length < 2) return reply(`Example: ${prefix + command} groupID, caption`);
 
-  let target = argsText[0]; // e.g., 2547xxxxxxx@g.us
+  let target = argsText[0];
   let caption = argsText.slice(1).join(',');
 
-  const type = Object.keys(quoted.message)[0]; // imageMessage, videoMessage, audioMessage
+  const type = Object.keys(quoted.message)[0];
 
   const stream = await dave.downloadContentFromMessage(quoted.message[type], type.replace('Message', ''));
   let buffer = Buffer.from([]);
@@ -2362,11 +2384,97 @@ case 'upswtag': {
 
   reply('✅ Successfully uploaded status with mention!');
 }
-break;
-
+break
 
 // ================== OFF SETTINGS ==================
+case 'tovoicenote': {
+  try {
+    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+    const ffmpeg = require('fluent-ffmpeg');
+    const fs = require('fs');
+    const path = require('path');
+    const { tmpdir } = require('os');
 
+    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    const msg = (quotedMsg && (quotedMsg.videoMessage || quotedMsg.audioMessage))
+                || m.message?.videoMessage
+                || m.message?.audioMessage;
+
+    if (!msg) return reply("Reply to a video or audio to convert it to a voice note!");
+
+    const mime = msg.mimetype || '';
+    if (!/video|audio/.test(mime)) return reply("Only works on video or audio messages!");
+
+    reply("Converting to voice note...");
+
+    const messageType = mime.split("/")[0];
+    const stream = await downloadContentFromMessage(msg, messageType);
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+    const inputPath = path.join(tmpdir(), `input_${Date.now()}.mp4`);
+    const outputPath = path.join(tmpdir(), `output_${Date.now()}.ogg`);
+    fs.writeFileSync(inputPath, buffer);
+
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputPath)
+        .inputOptions('-t 59')
+        .toFormat('opus')
+        .outputOptions(['-c:a libopus', '-b:a 64k'])
+        .on('end', resolve)
+        .on('error', reject)
+        .save(outputPath);
+    });
+
+    const audioBuffer = fs.readFileSync(outputPath);
+    await dave.sendMessage(from, { audio: audioBuffer, mimetype: 'audio/ogg', ptt: true }, { quoted: m });
+
+    fs.unlinkSync(inputPath);
+    fs.unlinkSync(outputPath);
+
+    reply("Voice note sent!");
+  } catch (err) {
+    console.error("tovoicenote error:", err);
+    reply("Failed to convert media to voice note. Ensure it is a valid video/audio file.");
+  }
+}
+break
+
+case 'toimage': {
+  try {
+    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+    const fs = require('fs');
+    const path = require('path');
+    const { tmpdir } = require('os');
+    const sharp = require('sharp');
+
+    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    const stickerMsg = (quotedMsg && quotedMsg.stickerMessage) || m.message?.stickerMessage;
+
+    if (!stickerMsg || !stickerMsg.mimetype?.includes('webp')) {
+      return reply("Reply to a sticker to convert it to an image!");
+    }
+
+    m.reply("Converting sticker to image...");
+
+    const stream = await downloadContentFromMessage(stickerMsg, 'sticker');
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+    const outputPath = path.join(tmpdir(), `sticker_${Date.now()}.png`);
+    await sharp(buffer).png().toFile(outputPath);
+
+    const imageBuffer = fs.readFileSync(outputPath);
+    await dave.sendMessage(from, { image: imageBuffer }, { quoted: m });
+
+    fs.unlinkSync(outputPath);
+    reply("Sticker converted to image!");
+  } catch (err) {
+    console.error("toimage error:", err);
+    reply("Failed to convert sticker to image.");
+  }
+}
+break
 // ================== LIST CASE ==================
 case "listcase": {
   if (!daveshown) return reply(mess.owner);
@@ -2427,6 +2535,8 @@ db.data.settings[botNumber].autoTyping = false
 reply(`Successfully Changed Auto Typing To ${q}`)
 }
 break
+
+
 
 
 //==================================================//
@@ -2802,129 +2912,6 @@ case "group-vcf": {
 }
 break;
 
-case 'take': {
-    const { Sticker, StickerTypes } = require('wa-sticker-formatter');
-    const fs = require('fs');
-    const { exec } = require('child_process');
-
-    let msgR = m.quoted ? m.quoted : m;
-    if (!msgR) return reply('Quote an image, a short video, or a sticker to change watermark.');
-
-    let media;
-    let isVideo = false;
-    let isSticker = false;
-
-    // Check the message structure properly
-    if (msgR.message?.imageMessage) {
-        media = msgR.message.imageMessage;
-    } else if (msgR.message?.videoMessage) {
-        media = msgR.message.videoMessage;
-        isVideo = true;
-    } else if (msgR.message?.stickerMessage) {
-        media = msgR.message.stickerMessage;
-        isSticker = true;
-    } else if (msgR.imageMessage) {
-        media = msgR.imageMessage;
-    } else if (msgR.videoMessage) {
-        media = msgR.videoMessage;
-        isVideo = true;
-    } else if (msgR.stickerMessage) {
-        media = msgR.stickerMessage;
-        isSticker = true;
-    } else {
-        console.log('Message structure:', JSON.stringify(msgR, null, 2)); // Debug log
-        return reply('This is neither a sticker, image, nor a video.');
-    }
-
-    try {
-        let filePath = await dave.downloadAndSaveMediaMessage(media);
-
-        // If it's already a sticker, we might need to convert it differently
-        if (isSticker) {
-            // For stickers, we can use the file directly or convert if needed
-            const sticker = new Sticker(filePath, {
-                pack: pushname,
-                author: pushname,
-                type: StickerTypes.FULL,
-                categories: ["🤩", "🎉"],
-                id: "12345",
-                quality: 70,
-                background: "transparent",
-            });
-
-            const buffer = await sticker.toBuffer();
-            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
-        } 
-        else if (isVideo) {
-            // Convert video to webp sticker-compatible format using ffmpeg
-            let tempOutput = `./temp_${Date.now()}.webp`;
-            await new Promise((resolve, reject) => {
-                exec(
-                    `ffmpeg -y -i "${filePath}" -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,format=rgba" -t 10 "${tempOutput}"`,
-                    (err) => {
-                        if (err) {
-                            console.error('FFmpeg error:', err);
-                            return reject(err);
-                        }
-                        resolve();
-                    }
-                );
-            });
-            
-            // Delete original file
-            fs.unlinkSync(filePath);
-            filePath = tempOutput;
-
-            const sticker = new Sticker(filePath, {
-                pack: pushname,
-                author: pushname,
-                type: StickerTypes.FULL,
-                categories: ["🤩", "🎉"],
-                id: "12345",
-                quality: 70,
-                background: "transparent",
-            });
-
-            const buffer = await sticker.toBuffer();
-            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
-        } 
-        else {
-            // For images
-            const sticker = new Sticker(filePath, {
-                pack: pushname,
-                author: pushname,
-                type: StickerTypes.FULL,
-                categories: ["🤩", "🎉"],
-                id: "12345",
-                quality: 70,
-                background: "transparent",
-            });
-
-            const buffer = await sticker.toBuffer();
-            await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
-        }
-
-        // Clean up temp file
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
-
-    } catch (error) {
-        console.error('Error in take command:', error);
-        reply('Error processing media. Please try again.');
-        
-        // Clean up any temporary files on error
-        try {
-            if (filePath && fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        } catch (cleanupError) {
-            console.error('Cleanup error:', cleanupError);
-        }
-    }
-}
-break;
-
 
 
 
@@ -3134,6 +3121,54 @@ break;
 
 
 
+case 'mbwaa':
+case 'toka':
+case 'remove': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!daveshown) return reply(mess.owner)
+
+    let target;
+    if (m.mentionedJid?.[0]) {
+        target = m.mentionedJid[0];
+    } else if (m.quoted?.sender) {
+        target = m.quoted.sender;
+    } else if (args[0]) {
+        const number = args[0].replace(/[^0-9]/g, '');
+        if (!number) return reply(`Example: ${command} 254104260236`);
+        target = `${number}@s.whatsapp.net`;
+    } else {
+        return reply(`Example: ${command} 254712345678`);
+    }
+
+    const botNumber = dave.user?.id || '';
+    const ownerNumber = (config.OWNER_NUMBER || '').replace(/[^0-9]/g, '');
+    const ownerJid = ownerNumber ? `${ownerNumber}@s.whatsapp.net` : '';
+
+    if (target === botNumber) return reply("I can't remove myself!");
+    if (target === ownerJid) return reply("You can't remove my owner!");
+
+    try {
+        const result = await Promise.race([
+            dave.groupParticipantsUpdate(from, [target], 'remove'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000))
+        ]);
+
+        if (result && !result[0]?.status) {
+            await reply(`Successfully removed @${target.split('@')[0]}`, { mentions: [target] });
+        } else {
+            reply("Couldn't remove this user. Maybe they're the group creator.");
+        }
+
+    } catch (err) {
+        if (err.message === 'timeout') {
+            reply("WhatsApp took too long to respond. Try again in a few seconds.");
+        } else {
+            console.error("Kick Error:", err);
+            reply("Failed to remove member. Possibly due to permission issues or socket lag.");
+        }
+    }
+}
+break
 
 
 // === DARKEN SKIN / BLACKEN CHARACTER ===
@@ -3329,7 +3364,49 @@ Message: ${q ? q : 'no message'}`
     break
 //==================================================//
         
+case 'ephoto': {
+  try {
+    const FormData = require('form-data');
+    const axios = require('axios');
+    const cheerio = require('cheerio');
 
+    const effect = args[0]?.toLowerCase();
+    const text = args.slice(1).join(' ');
+    if (!effect || !text) return reply(
+      "Usage: .ephoto <effect> <text>\n" +
+      "Available effects: silver, gold, neon, shadow, glitch"
+    );
+
+    const effectMap = {
+      silver: "https://ephoto360.com/effect/silver-text-effect.html",
+      gold: "https://ephoto360.com/effect/gold-text-effect.html",
+      neon: "https://ephoto360.com/effect/neon-text-effect.html",
+      shadow: "https://ephoto360.com/effect/shadow-text-effect.html",
+      glitch: "https://ephoto360.com/effect/glitch-text-effect.html"
+    };
+
+    const url = effectMap[effect];
+    if (!url) return reply("Invalid effect! Check the list with available effects.");
+
+    const form = new FormData();
+    form.append('text[]', text);
+
+    const { data } = await axios.post(url, form, {
+      headers: form.getHeaders()
+    });
+
+    const $ = cheerio.load(data);
+    const imgUrl = $('img#main_image').attr('src');
+    if (!imgUrl) return reply("Failed to generate image!");
+
+    await dave.sendMessage(from, { image: { url: imgUrl }, caption: `Your Ephoto (${effect}) result for: ${text}` });
+
+  } catch (err) {
+    console.error("Ephoto command error:", err);
+    reply("Something went wrong while generating the Ephoto!");
+  }
+}
+break
 
 //==================================================//
 case 'h':
@@ -3782,118 +3859,104 @@ try {
 }
 break;
 //==================================================//
+case 'obfuscate':
+case 'obf':
 case 'enc':
 case 'encrypt': {
-const JsConfuser = require('js-confuser')
+    const JsConfuser = require('js-confuser')
 
-if (!m.message.extendedTextMessage || !m.message.extendedTextMessage.contextInfo.quotedMessage) {
-return reply('❌ Please Reply File To Be Encryption.');
-}
-const quotedMessage = m.message.extendedTextMessage.contextInfo.quotedMessage;
-const quotedDocument = quotedMessage.documentMessage;
-if (!quotedDocument || !quotedDocument.fileName.endsWith('.js')) {
-return reply('❌ Please Reply File To Be Encryption.');
-}
-try {
-const fileName = quotedDocument.fileName;
-const docBuffer = await m.quoted.download();
-if (!docBuffer) {
-return reply('❌ Please Reply File To Be Encryption.');
-}
-await dave.sendMessage(m.chat, {
- react: { text: '🕛', key: m.key }
- });
-const obfuscatedCode = await JsConfuser.obfuscate(docBuffer.toString(), {
-target: "node",
-preset: "high",
-compact: true,
-minify: true,
-flatten: true,
-identifierGenerator: function () {
-const originalString = "素GIFTED晴DAVE晴" + "素GIFTED晴DAVE晴";
-const removeUnwantedChars = (input) => input.replace(/[^a-zA-Z素GIDDY晴TENNOR晴]/g, "");
-const randomString = (length) => {
-let result = "";
-const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-for (let i = 0; i < length; i++) {
-result += characters.charAt(Math.floor(Math.random() * characters.length));
-}
-return result;
-};
-return removeUnwantedChars(originalString) + randomString(2);
-},
-renameVariables: true,
-renameGlobals: true,
-stringEncoding: true,
-stringSplitting: 0.0,
-stringConcealing: true,
-stringCompression: true,
-duplicateLiteralsRemoval: 1.0,
-shuffle: { hash: 0.0, true: 0.0 },
-stack: true,
-controlFlowFlattening: 1.0,
-opaquePredicates: 0.9,
-deadCode: 0.0,
-dispatcher: true,
-rgf: false,
-calculator: true,
-hexadecimalNumbers: true,
-movedDeclarations: true,
-objectExtraction: true,
-globalConcealing: true,
-});
-await dave.sendMessage(m.chat, {
-document: Buffer.from(obfuscatedCode, 'utf-8'),
-mimetype: 'application/javascript',
-fileName: `${fileName}`,
-caption: `•Successful Encrypt
-•Type: Hard Code
-•@giftde dave`,
-}, { quoted: fkontak });
-
-} catch (err) {
-console.error('Error during encryption:', err);
-await reply(`❌ An error occurred: ${error.message}`);
-}
-break;
-}
-  //==================================================//   
-
-          case 'tovn':
-case 'toaudio': {
-    if (!quoted) return reply(`Reply to a video/audio with caption ${prefix + command}`);
-
-    // Get the actual message object (handles ephemeral / forwarded)
-    let msgContent = quoted.message;
-    if (msgContent.ephemeralMessage) msgContent = msgContent.ephemeralMessage.message;
-
-    const mimeType = Object.keys(msgContent)[0];
-    if (!/video|audio/.test(mimeType)) return reply(`Reply to a video/audio with caption ${prefix + command}`);
-
-    const isPTT = command === 'tovn'; // Voice note if .tovn
-
+    // Better message checking
+    if (!m.quoted) {
+        return reply('❌ Please reply to a JavaScript file to encrypt.');
+    }
+    
+    const quotedMessage = m.quoted.message;
+    if (!quotedMessage?.documentMessage) {
+        return reply('❌ Please reply to a document file.');
+    }
+    
+    const quotedDocument = quotedMessage.documentMessage;
+    if (!quotedDocument.fileName?.endsWith('.js')) {
+        return reply('❌ Please reply to a JavaScript file (.js extension).');
+    }
+    
     try {
-        // Download media
-        const media = await dave.downloadAndSaveMediaMessage(quoted);
+        const fileName = quotedDocument.fileName;
+        
+        // Send reaction to show processing
+        await dave.sendMessage(m.chat, {
+            react: { text: '🕛', key: m.key }
+        });
+        
+        // Download the file
+        const docBuffer = await m.quoted.download();
+        if (!docBuffer || docBuffer.length === 0) {
+            return reply('❌ Failed to download the file. Please try again.');
+        }
 
-        // Send as audio
-        await dave.sendMessage(
-            m.chat,
-            { audio: media, mimetype: 'audio/mpeg', ptt: isPTT },
-            { quoted: m }
-        );
+        // Convert buffer to string and obfuscate
+        const fileContent = docBuffer.toString('utf8');
+        if (!fileContent.trim()) {
+            return reply('❌ The file appears to be empty.');
+        }
 
-        // Remove temporary file
-        fs.unlinkSync(media);
+        const obfuscatedCode = await JsConfuser.obfuscate(fileContent, {
+            target: "node",
+            preset: "high",
+            compact: true,
+            minify: true,
+            flatten: true,
+            identifierGenerator: function () {
+                const originalString = "素GIFTED晴DAVE晴" + "素GIFTED晴DAVE晴";
+                const removeUnwantedChars = (input) => input.replace(/[^a-zA-Z素GIDDY晴TENNOR晴]/g, "");
+                const randomString = (length) => {
+                    let result = "";
+                    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                    for (let i = 0; i < length; i++) {
+                        result += characters.charAt(Math.floor(Math.random() * characters.length));
+                    }
+                    return result;
+                };
+                return removeUnwantedChars(originalString) + randomString(2);
+            },
+            renameVariables: true,
+            renameGlobals: true,
+            stringEncoding: true,
+            stringSplitting: 0.0,
+            stringConcealing: true,
+            stringCompression: true,
+            duplicateLiteralsRemoval: 1.0,
+            shuffle: { hash: 0.0, true: 0.0 },
+            stack: true,
+            controlFlowFlattening: 1.0,
+            opaquePredicates: 0.9,
+            deadCode: 0.0,
+            dispatcher: true,
+            rgf: false,
+            calculator: true,
+            hexadecimalNumbers: true,
+            movedDeclarations: true,
+            objectExtraction: true,
+            globalConcealing: true,
+        });
 
-        reply(`✅ Converted to ${isPTT ? 'voice note' : 'audio'} successfully!`);
+        // Send the obfuscated file
+        await dave.sendMessage(m.chat, {
+            document: Buffer.from(obfuscatedCode, 'utf-8'),
+            mimetype: 'application/javascript',
+            fileName: `encrypted_${fileName}`,
+            caption: `✅ Successfully Encrypted\n📁 Type: Hard Code Obfuscation\n👤 By: Dave AI`,
+        }, { quoted: m }); // Changed from fkontak to m for proper quoting
+
     } catch (err) {
-        console.error(err);
-        reply('❌ Failed to process media. Make sure it is a valid video/audio.');
+        console.error('Error during encryption:', err);
+        await reply(`❌ An error occurred: ${err.message}`); // Fixed: err.message instead of error.message
     }
 }
 break;
+  //==================================================//   
 
+          
 case 'readmore':
 case 'readall': {
   if (!q) return reply(`Enter text like ${command} youarebad|justkidding`)
@@ -3904,6 +3967,63 @@ case 'readall': {
 }
 break
 
+case 'tomp3': 
+case 'tovn':
+case 'toaudio': {
+  try {
+    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+    const ffmpeg = require('fluent-ffmpeg');
+    const fs = require('fs');
+    const { tmpdir } = require('os');
+    const path = require('path');
+
+    // ✅ Get the media message
+    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    const msg = (quotedMsg && (quotedMsg.videoMessage || quotedMsg.audioMessage)) 
+                || m.message?.videoMessage 
+                || m.message?.audioMessage;
+
+    if (!msg) return reply("🎧 Reply to a *video* or *audio* to convert it to audio!");
+
+    const mime = msg.mimetype || '';
+    if (!/video|audio/.test(mime)) return reply("⚠️ Only works on *video* or *audio* messages!");
+
+    reply("🎶 Converting to audio...");
+
+    // ✅ Download media
+    const stream = await downloadContentFromMessage(msg, mime.split("/")[0]);
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+    // ✅ Temp paths
+    const inputPath = path.join(tmpdir(), `input_${Date.now()}.mp4`);
+    const outputPath = path.join(tmpdir(), `output_${Date.now()}.mp3`);
+    fs.writeFileSync(inputPath, buffer);
+
+    // ✅ Convert using ffmpeg
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputPath)
+        .toFormat('mp3')
+        .on('end', resolve)
+        .on('error', reject)
+        .save(outputPath);
+    });
+
+    // ✅ Send converted audio
+    const audioBuffer = fs.readFileSync(outputPath);
+    await dave.sendMessage(from, { audio: audioBuffer, mimetype: 'audio/mpeg', ptt: false }, { quoted: m });
+
+    // ✅ Cleanup
+    fs.unlinkSync(inputPath);
+    fs.unlinkSync(outputPath);
+
+    reply("✅ Conversion complete!");
+  } catch (err) {
+    console.error("❌ toaudio error:", err);
+    reply("💥 Failed to convert media to audio. Ensure it's a valid video/audio file.");
+  }
+}
+break;
 
 
 case 'stickerwm':
@@ -3922,37 +4042,7 @@ case 'swm': {
 break
 
 
-case 'stiker':
-case 'tosticker': {
-    try {
-        let msgMedia = quoted ? quoted : m;
-        let type = Object.keys(msgMedia.message)[0];
 
-        if (!/image|video/gi.test(type)) return reply('❌ Send or reply to media first!');
-
-        // For video, check duration
-        if (type === 'videoMessage') {
-            const duration = msgMedia.message.videoMessage.seconds || 0;
-            if (duration > 15) return reply('❌ Video duration must be less than 15 seconds!');
-        }
-
-        // Download media
-        const media = await dave.downloadAndSaveMediaMessage(msgMedia);
-
-        // Send sticker
-        await dave.sendImageAsSticker(m.chat, media, m, { packname: footer });
-
-        // Delete temp file
-        fs.unlinkSync(media);
-
-        // React
-        await dave.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-    } catch (err) {
-        console.error(err);
-        reply('❌ An error occurred while creating the sticker.');
-    }
-}
-break;
 
 case 'smeme':
 case 'stickermeme':
