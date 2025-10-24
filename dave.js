@@ -390,7 +390,7 @@ async function reply(text) {
                     externalAdReply: {
                         title:"𝘿𝙖𝙫𝙚𝘼𝙄",
                         body:"made by dave",
-                        thumbnailUrl: "https://n.uguu.se/BacqcVGE.jpg",
+                        thumbnailUrl: "https://files.catbox.moe/z39yc4.jpg",
                         sourceUrl: null,
                         renderLargerThumbnail: false,
                     }
