@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../library/database/antitag.json');
-
+const filePath = path.join(__dirname, '../../database/antitag.json');
 // Ensure database file exists
 function ensureDB() {
     if (!fs.existsSync(filePath)) {
