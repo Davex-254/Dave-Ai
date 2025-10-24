@@ -4,7 +4,7 @@ let daveplug = async (m, { dave, daveshown, args, command, reply }) => {
 
     let feature, mode;
 
-    // --- Determine feature & mode based on command & args ---
+    // Determine feature & mode based on command & args
     if (command === 'autostatusreact' || command === 'autoreactstatus') {
       feature = 'react';
       mode = args[0]?.toLowerCase();
@@ -38,16 +38,15 @@ let daveplug = async (m, { dave, daveshown, args, command, reply }) => {
     if (feature === 'react') global.AUTOREACTSTATUS = state;
 
     reply(
-      `✅ Auto-status updated:\n` +
-      `👁️ View status: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\n` +
-      `💬 React status: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}\n\n` +
-      `(Temporary — resets on restart)`
+      `Auto-status updated:\n` +
+      `View status: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\n` +
+      `React status: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}`
     );
 
     console.log(`AUTOVIEWSTATUS: ${global.AUTOVIEWSTATUS}, AUTOREACTSTATUS: ${global.AUTOREACTSTATUS}`);
   } catch (err) {
     console.error('Autostatus error:', err);
-    reply('⚠️ An error occurred while processing the command.');
+    reply('An error occurred while processing the command.');
   }
 };
 
