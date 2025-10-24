@@ -203,8 +203,8 @@ let daveplug = async (m, { dave, daveshown, command, reply }) => {
   }
 };
 
-daveplug.help = ['update', 'restart', 'start'];
+daveplug.help = ['update', 'redeploy', 'start'];
 daveplug.tags = ['system'];
-daveplug.command = ['update', 'restart', 'start'];
+daveplug.command = ['update', 'redeploy', 'start'];
 
 module.exports = daveplug;
