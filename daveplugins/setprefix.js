@@ -1,52 +1,61 @@
 const fs = require('fs');
 const path = require('path');
+const chalk = require('chalk');
 
-let daveplug = async (m, { dave, daveshown, reply, text }) => {
-    try {
-        if (!daveshown) return reply("Owner only command!");
-        if (!text) return reply("Please provide a prefix!\nExample: setprefix .\nOr use 'none' to remove the prefix");
+// Path for prefix storage
+const prefixSettingsPath = path.join(__dirname, '../../library/database/prefixSettings.json');
 
-        // Add processing reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '...', key: m.key }
-        });
+// ====== Helper Functions ====== //
+function saveXPrefix(newPrefix) {
+  try {
+    const dir = path.dirname(prefixSettingsPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(prefixSettingsPath, JSON.stringify({ xprefix: newPrefix }, null, 2));
+    global.xprefix = newPrefix;
+    console.log(chalk.green(`✅ Prefix saved as: '${newPrefix || 'none'}'`));
+  } catch (err) {
+    console.error('❌ Error saving prefix:', err);
+  }
+}
 
-        let newPrefix = text.toLowerCase().trim();
-        if (newPrefix === 'none') newPrefix = '';
-
-        // Correct path to prefix settings
-        const prefixSettingsPath = path.join(__dirname, '../library/database/prefixSettings.json');
-
-        // Create database directory if it doesn't exist
-        const databaseDir = path.dirname(prefixSettingsPath);
-        if (!fs.existsSync(databaseDir)) {
-            fs.mkdirSync(databaseDir, { recursive: true });
-        }
-
-        // Save the new prefix using xprefix
-        const prefixSettings = { xprefix: newPrefix };
-        fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixSettings, null, 2));
-
-        // Update global variable immediately
-        global.xprefix = newPrefix;
-
-        // Add success reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✓', key: m.key }
-        });
-
-        await reply(`Prefix successfully set to: ${newPrefix === '' ? 'none (no prefix required)' : newPrefix}`);
-
-    } catch (err) {
-        console.error('Set Prefix Command Error:', err);
-
-        // Add error reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✗', key: m.key }
-        });
-
-        await reply('Failed to set prefix!');
+function loadXPrefix() {
+  try {
+    if (fs.existsSync(prefixSettingsPath)) {
+      const data = JSON.parse(fs.readFileSync(prefixSettingsPath, 'utf8'));
+      global.xprefix = data.xprefix ?? '.';
+      console.log(chalk.blue(`🔹 Prefix loaded: '${global.xprefix || 'none'}'`));
+    } else {
+      saveXPrefix('.');
     }
+  } catch (err) {
+    console.error('❌ Error loading prefix:', err);
+    global.xprefix = '.';
+  }
+}
+
+// Auto-load prefix at startup
+loadXPrefix();
+
+// ====== Plugin Command ====== //
+let daveplug = async (m, { dave, daveshown, reply, text }) => {
+  try {
+    if (!daveshown) return reply('Owner only command!');
+    if (!text) return reply(`Provide a prefix!\nExample: ${global.xprefix}setprefix .\nUse 'none' to remove prefix.`);
+
+    await dave.sendMessage(m.chat, { react: { text: '...', key: m.key } });
+
+    let newPrefix = text.trim().toLowerCase();
+    if (newPrefix === 'none') newPrefix = '';
+
+    saveXPrefix(newPrefix);
+
+    await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
+    await reply(`Prefix successfully set to: ${newPrefix === '' ? 'none (no prefix required)' : newPrefix}`);
+  } catch (err) {
+    console.error('Set Prefix Error:', err);
+    await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
+    await reply('Failed to change prefix.');
+  }
 };
 
 daveplug.help = ['setprefix'];
