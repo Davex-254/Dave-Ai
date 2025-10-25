@@ -11,6 +11,8 @@ const prefixSettingsPath = path.join(__dirname, 'library/database/prefixSettings
 // ==================== LOAD SETTINGS ==================== //
 function loadSettings() {
   try {
+    let settings = {};
+
     if (!fs.existsSync(settingsPath)) {
       const defaultSettings = {
         // Bot Info
@@ -33,26 +35,44 @@ function loadSettings() {
         author: process.env.AUTHOR || '𝘿𝙖𝙫𝙚𝘼𝙄',
 
         // Auto Reactions
-        areact: { enabled: false, chats: {} },
+        areact: {
+          enabled: false,
+          chats: {},
+          emojis: ['💜', '💖', '💗', '💞', '💕', '❤️', '🔥', '😎', '💯', '🤖'],
+          mode: 'random'
+        },
 
         // Group Settings
         antilinkgc: { enabled: false },
 
         // Security Features
+        antilink: {},
         antitag: {},
         antibadword: {},
-        antidemote: {},
-        antipromote: {},
-        antibot: {}
+        antipromote: { enabled: false, mode: 'revert' },
+        antidemote: { enabled: false, mode: 'revert' },
+        antibot: {},
+
+        // Auto Like
+        autolike: { enabled: false }
       };
 
       const dir = path.dirname(settingsPath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
-      return defaultSettings;
+      settings = defaultSettings;
+    } else {
+      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+
+      // Ensure required structures exist
+      settings.areact = settings.areact || { enabled: false, chats: {}, emojis: [], mode: 'random' };
+      settings.antipromote = settings.antipromote || { enabled: false, mode: 'revert' };
+      settings.antidemote = settings.antidemote || { enabled: false, mode: 'revert' };
+      settings.antidelete = settings.antidelete || { enabled: true };
+      settings.autolike = settings.autolike || { enabled: false };
     }
 
-    return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    return settings;
   } catch (error) {
     console.error('Error loading settings:', error);
     return {};
@@ -64,7 +84,7 @@ function loadXPrefix() {
   try {
     if (fs.existsSync(prefixSettingsPath)) {
       const prefixData = JSON.parse(fs.readFileSync(prefixSettingsPath, 'utf8'));
-      return prefixData.xprefix !== undefined ? prefixData.xprefix : '.';
+      return prefixData.xprefix ?? '.';
     } else {
       const defaultPrefix = { xprefix: '.' };
       const dir = path.dirname(prefixSettingsPath);
@@ -85,7 +105,7 @@ function saveXPrefix(newPrefix) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixData, null, 2));
     global.xprefix = newPrefix;
-    console.log(chalk.green(`✅ Prefix changed to '${newPrefix || 'none'}'`));
+    console.log(chalk.green(`✅ Prefix changed to '${newPrefix || '.'}'`));
   } catch (error) {
     console.error('Error saving prefix:', error);
   }
@@ -139,7 +159,7 @@ global.welcome = settings.welcome;
 global.anticall = settings.anticall;
 
 // ==================== BOT CONFIG ==================== //
-global.xprefix = loadXPrefix();
+global.xprefix = loadXPrefix(); // ✅ consistent lowercase key
 global.premium = [global.owner];
 global.botversion = '1.0.0';
 global.typebot = 'Plugin × Case';
