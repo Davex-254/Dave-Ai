@@ -3,7 +3,7 @@ const fs = require('fs')
 const axios = require('axios')
 const path = require('path')
 const chalk = require('chalk')
-require('../../daveenv')
+require('../../settings')
 
 module.exports.welcome = async (iswel, isleft, dave, anu) => {
   try {
@@ -47,7 +47,7 @@ module.exports.welcome = async (iswel, isleft, dave, anu) => {
         contextInfo: {
           mentionedJid,
           externalAdReply: {
-            title: `💠 Hello! Welcome!`,
+            title: `Hello! Welcome!`,
             body: `${global.botname}`,
             thumbnailUrl: ppgroup,
             sourceUrl: "https://github.com",                                          
@@ -74,7 +74,7 @@ module.exports.welcome = async (iswel, isleft, dave, anu) => {
         contextInfo: {
           mentionedJid,
           externalAdReply: {
-            title: `💠 Goodbye! See you later!`,
+            title: `Goodbye! See you later!`,
             body: `${global.botname}`,
             thumbnailUrl: ppgroup,
             sourceUrl: "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
@@ -101,7 +101,7 @@ module.exports.welcome = async (iswel, isleft, dave, anu) => {
         contextInfo: {
           mentionedJid,
           externalAdReply: {
-            title: `💠 Goodbye! See you later!`,
+            title: `Goodbye! See you later!`,
             body: `${global.botname}`,
             thumbnailUrl: ppgroup,
             sourceUrl: "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
