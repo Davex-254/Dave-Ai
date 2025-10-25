@@ -69,7 +69,7 @@ if (global.settings.antilinkgc && global.settings.antilinkgc.enabled) {
         if (isAdmins) return m.reply(bvl)
         if (m.key.fromMe) return m.reply(bvl)
         if (daveshown) return m.reply(bvl)
-        
+
         await dave.sendMessage(m.chat, {
             delete: {
                 remoteJid: m.chat,
@@ -91,7 +91,7 @@ if (global.settings.antilink && global.settings.antilink.enabled) {
         if (isAdmins) return m.reply(bvl)
         if (m.key.fromMe) return m.reply(bvl)
         if (daveshown) return m.reply(bvl)
-        
+
         await dave.sendMessage(m.chat, {
             delete: {
                 remoteJid: m.chat,
