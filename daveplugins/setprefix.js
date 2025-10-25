@@ -16,7 +16,7 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
 
         // Correct path to prefix settings
         const prefixSettingsPath = path.join(__dirname, '../library/database/prefixSettings.json');
-        
+
         // Create database directory if it doesn't exist
         const databaseDir = path.dirname(prefixSettingsPath);
         if (!fs.existsSync(databaseDir)) {
@@ -27,6 +27,9 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
         const prefixSettings = { prefix: newPrefix };
         fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixSettings, null, 2));
 
+        // Update global variable immediately
+        global.xprefix = newPrefix;
+
         // Add success reaction
         await dave.sendMessage(m.chat, {
             react: { text: '✓', key: m.key }
@@ -36,12 +39,12 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
 
     } catch (err) {
         console.error('Set Prefix Command Error:', err);
-        
+
         // Add error reaction
         await dave.sendMessage(m.chat, {
             react: { text: '✗', key: m.key }
         });
-        
+
         await reply('Failed to set prefix!');
     }
 };
