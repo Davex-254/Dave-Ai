@@ -504,61 +504,8 @@ async function startDave() {
 
     store.bind(dave.ev);
 
-   const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏']; // default react emojis
+   const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏'];
 global.areactEmojis = defaultEmojis;
-
-// ============ ANTI-DELETE MESSAGE STORAGE SETUP ============
-global.messageBackup = global.messageBackup || {};
-global.antiDelSettings = global.antiDelSettings || { enabled: true };
-
-// Save stored messages to a file
-function saveStoredMessages(data) {
-    try {
-        fs.writeFileSync('./messageBackup.json', JSON.stringify(data, null, 2));
-    } catch (err) {
-        console.error('Error saving stored messages:', err);
-    }
-}
-
-// Handle new incoming message (for anti-delete backup)
-function handleIncomingMessage(mek) {
-    try {
-        const chatId = mek.key.remoteJid;
-        const messageId = mek.key.id;
-        const textMessage = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
-
-        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {};
-
-        if (textMessage && !global.messageBackup[chatId][messageId]) {
-            global.messageBackup[chatId][messageId] = {
-                sender: mek.key.participant || mek.key.remoteJid,
-                text: textMessage,
-                timestamp: mek.messageTimestamp
-            };
-            saveStoredMessages(global.messageBackup);
-        }
-    } catch (err) {
-        console.error('Error handling incoming message:', err);
-    }
-}
-
-// Handle message revocation (anti-delete)
-async function handleMessageRevocation(dave, mek) {
-    try {
-        const chatId = mek.key.remoteJid;
-        const msgId = mek.key.id;
-        const deleted = global.messageBackup?.[chatId]?.[msgId];
-
-        if (deleted) {
-            const sender = deleted.sender || 'Unknown';
-            const content = deleted.text || '[Non-text message]';
-            const caption = `🛑 *Anti-Delete Detected!*\n\n👤 *Sender:* ${sender}\n💬 *Message:* ${content}`;
-            await dave.sendMessage(chatId, { text: caption });
-        }
-    } catch (err) {
-        console.error('Error handling message revocation:', err);
-    }
-}
 
 // ============ MESSAGE UPSERT HANDLER ============
 dave.ev.on('messages.upsert', async (chatUpdate) => {
@@ -572,80 +519,102 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
             ? mek.message.ephemeralMessage.message
             : mek.message;
 
-        // Anti-delete: save incoming message or handle deletion
-        if (global.antiDelSettings?.enabled) {
-            if (mek.message?.protocolMessage?.type === 0) {
-                await handleMessageRevocation(dave, mek);
-            } else {
-                handleIncomingMessage(mek);
-            }
-        }
-
-        // Backup text messages
         const chatId = mek.key.remoteJid;
-        const messageId = mek.key.id;
-        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {};
-
-        const textMessage = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
-        if (textMessage && !global.messageBackup[chatId][messageId]) {
-            global.messageBackup[chatId][messageId] = {
-                sender: mek.key.participant || mek.key.remoteJid,
-                text: textMessage,
-                timestamp: mek.messageTimestamp
-            };
-            saveStoredMessages(global.messageBackup);
-        }
-
         const fromMe = mek.key.fromMe;
 
-        // Auto-read
-        if (global.AUTO_READ && !fromMe) {
-            await dave.readMessages([mek.key]);
-        }
-
-        // Status broadcasts
-        if (mek.key.remoteJid === 'status@broadcast') {
-            if (global.AUTOVIEWSTATUS) await dave.readMessages([mek.key]);
-            if (global.AUTOREACTSTATUS) {
-                const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
-                await doReact(emoji, mek, dave);
+        // Status broadcasts - handle first before other logic
+        if (chatId === 'status@broadcast') {
+            try {
+                if (global.AUTOVIEWSTATUS) {
+                    await dave.readMessages([mek.key]);
+                }
+                if (global.AUTOREACTSTATUS && defaultEmojis.length > 0) {
+                    const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
+                    await dave.sendMessage(chatId, {
+                        react: {
+                            text: emoji,
+                            key: mek.key
+                        }
+                    });
+                }
+            } catch (statusErr) {
+                console.log(`Status handling error: ${statusErr.message}`);
             }
-            return;
+            return; // Don't process status as regular messages
         }
 
-        // Auto react to messages
+        // Auto-read for regular messages
+        if (global.AUTO_READ && !fromMe) {
+            try {
+                await dave.readMessages([mek.key]);
+            } catch (readErr) {
+                console.log(`Auto-read error: ${readErr.message}`);
+            }
+        }
+
+        // Auto react to regular messages
         if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
-            const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
-            await doReact(emoji, mek, dave);
+            try {
+                const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
+                await dave.sendMessage(chatId, {
+                    react: {
+                        text: emoji,
+                        key: mek.key
+                    }
+                });
+            } catch (reactErr) {
+                console.log(`Auto-react error: ${reactErr.message}`);
+            }
         }
 
-        // Skip bot commands if bot is private
-        if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
+        // Skip bot-generated messages
         if (mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
         if (mek.key.id.startsWith('BAE5')) return;
 
-        // Pass to main handler - ✅ FIXED: Call the function with parameters
+        // Skip if bot is private and message is not from owner
+        if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
+
+        // Pass to main handler - dave.js will handle anti-delete and commands
         const m = smsg(dave, mek, store);
         require("./dave")(dave, m, chatUpdate, store);
 
     } catch (err) {
-        console.log(`Message handler error: ${err.message}`);
+        console.error(`Message handler error: ${err.message}`);
+        console.error(err.stack);
     }
 });
 
-// ============ MESSAGES.UPDATE HANDLER (ANTI-DELETE) ============
+// ============ MESSAGES.UPDATE HANDLER ============
 dave.ev.on('messages.update', async (updates) => {
     try {
-        if (!global.antiDelSettings?.enabled) return;
-
         for (const update of updates) {
-            const msg = update.update?.message || update.message;
-            if (msg?.protocolMessage?.type === 0) {
-                await handleMessageRevocation(dave, { key: update.key, message: msg });
+            try {
+                // Check if it's a valid update with required data
+                if (!update.key || !update.key.remoteJid) continue;
+
+                // Skip status updates
+                if (update.key.remoteJid === 'status@broadcast') continue;
+
+                // Get the message object
+                const message = update.update?.message || update.message;
+                if (!message) continue;
+
+                // Create a proper message object for processing
+                const mek = {
+                    key: update.key,
+                    message: message
+                };
+
+                // Pass to dave.js for anti-delete handling
+                const m = smsg(dave, mek, store);
+                require("./dave")(dave, m, { messages: [mek], type: 'notify' }, store);
+
+            } catch (updateErr) {
+                console.log(`Single update error: ${updateErr.message}`);
             }
         }
     } catch (err) {
-        console.log(`Anti-delete update handler error: ${err.message}`);
+        console.error(`Messages update handler error: ${err.message}`);
     }
 });
     // Anti-call handler
