@@ -504,79 +504,150 @@ async function startDave() {
 
     store.bind(dave.ev);
 
-   // Message upsert handler
-dave.ev.on('messages.upsert', async (chatUpdate) => {
+   const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏']; // default react emojis
+global.areactEmojis = defaultEmojis;
+
+// ============ ANTI-DELETE MESSAGE STORAGE SETUP ============
+global.messageBackup = global.messageBackup || {};
+global.antiDelSettings = global.antiDelSettings || { enabled: true };
+
+// Save stored messages to a file
+function saveStoredMessages(data) {
     try {
-        if (!chatUpdate.messages || chatUpdate.messages.length === 0) return
-        const mek = chatUpdate.messages[0]
-        if (!mek.message) return
+        fs.writeFileSync('./messageBackup.json', JSON.stringify(data, null, 2));
+    } catch (err) {
+        console.error('Error saving stored messages:', err);
+    }
+}
 
-        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? 
-            mek.message.ephemeralMessage.message : mek.message
+// Handle new incoming message (for anti-delete backup)
+function handleIncomingMessage(mek) {
+    try {
+        const chatId = mek.key.remoteJid;
+        const messageId = mek.key.id;
+        const textMessage = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
 
-        // Store messages
-        let chatId = mek.key.remoteJid
-        let messageId = mek.key.id
-        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {}
+        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {};
 
-        let textMessage = mek.message?.conversation || 
-                        mek.message?.extendedTextMessage?.text || null
-        if (textMessage) {
-            let savedMessage = {
+        if (textMessage && !global.messageBackup[chatId][messageId]) {
+            global.messageBackup[chatId][messageId] = {
                 sender: mek.key.participant || mek.key.remoteJid,
                 text: textMessage,
                 timestamp: mek.messageTimestamp
-            }
-            if (!global.messageBackup[chatId][messageId]) {
-                global.messageBackup[chatId][messageId] = savedMessage
-                saveStoredMessages(global.messageBackup)
+            };
+            saveStoredMessages(global.messageBackup);
+        }
+    } catch (err) {
+        console.error('Error handling incoming message:', err);
+    }
+}
+
+// Handle message revocation (anti-delete)
+async function handleMessageRevocation(dave, mek) {
+    try {
+        const chatId = mek.key.remoteJid;
+        const msgId = mek.key.id;
+        const deleted = global.messageBackup?.[chatId]?.[msgId];
+
+        if (deleted) {
+            const sender = deleted.sender || 'Unknown';
+            const content = deleted.text || '[Non-text message]';
+            const caption = `🛑 *Anti-Delete Detected!*\n\n👤 *Sender:* ${sender}\n💬 *Message:* ${content}`;
+            await dave.sendMessage(chatId, { text: caption });
+        }
+    } catch (err) {
+        console.error('Error handling message revocation:', err);
+    }
+}
+
+// ============ MESSAGE UPSERT HANDLER ============
+dave.ev.on('messages.upsert', async (chatUpdate) => {
+    try {
+        if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
+        const mek = chatUpdate.messages[0];
+        if (!mek.message) return;
+
+        // Unwrap ephemeral messages
+        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage')
+            ? mek.message.ephemeralMessage.message
+            : mek.message;
+
+        // Anti-delete: save incoming message or handle deletion
+        if (global.antiDelSettings?.enabled) {
+            if (mek.message?.protocolMessage?.type === 0) {
+                await handleMessageRevocation(dave, mek);
+            } else {
+                handleIncomingMessage(mek);
             }
         }
 
-        const fromMe = mek.key.fromMe
+        // Backup text messages
+        const chatId = mek.key.remoteJid;
+        const messageId = mek.key.id;
+        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {};
 
-        // Handle status broadcasts
-        if (mek.key.remoteJid === 'status@broadcast') {
-            if (global.AUTOVIEWSTATUS) {
-                await dave.readMessages([mek.key])
-            }
-            if (global.AUTOREACTSTATUS && areactEmojis.length > 0) {
-                const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)]
-                await doReact(randomEmoji, mek, dave)
-            }
-            return
+        const textMessage = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
+        if (textMessage && !global.messageBackup[chatId][messageId]) {
+            global.messageBackup[chatId][messageId] = {
+                sender: mek.key.participant || mek.key.remoteJid,
+                text: textMessage,
+                timestamp: mek.messageTimestamp
+            };
+            saveStoredMessages(global.messageBackup);
         }
 
-        // Auto react to all messages (global setting)
-        if (!fromMe && global.AREACT && areactEmojis.length > 0) {
-            const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)]
-            await doReact(randomEmoji, mek, dave)
-        }
+        const fromMe = mek.key.fromMe;
 
-        // Per-chat react (only if global AREACT is off)
-        if (!fromMe && !global.AREACT && global.areact && global.areact[chatId] && areactEmojis.length > 0) {
-            const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)]
-            await doReact(randomEmoji, mek, dave)
-        }
-
-        // Auto read
+        // Auto-read
         if (global.AUTO_READ && !fromMe) {
-            await dave.readMessages([mek.key])
+            await dave.readMessages([mek.key]);
         }
 
-        // Handle main commands
-        if (!dave.public && !fromMe && chatUpdate.type === 'notify') return
-        if (mek.key.id.startsWith('dave') && mek.key.id.length === 16) return
-        if (mek.key.id.startsWith('BAE5')) return
+        // Status broadcasts
+        if (mek.key.remoteJid === 'status@broadcast') {
+            if (global.AUTOVIEWSTATUS) await dave.readMessages([mek.key]);
+            if (global.AUTOREACTSTATUS) {
+                const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
+                await doReact(emoji, mek, dave);
+            }
+            return;
+        }
 
-        const m = smsg(dave, mek, store)
-        require("./dave")(dave, m, chatUpdate, store)
+        // Auto react to messages
+        if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
+            const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
+            await doReact(emoji, mek, dave);
+        }
+
+        // Skip bot commands if bot is private
+        if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
+        if (mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
+        if (mek.key.id.startsWith('BAE5')) return;
+
+        // Pass to main handler - ✅ FIXED: Call the function with parameters
+        const m = smsg(dave, mek, store);
+        require("./dave")(dave, m, chatUpdate, store);
 
     } catch (err) {
-        log(`Message handler error: ${err.message}`, 'red', true)
+        console.log(`Message handler error: ${err.message}`);
     }
-})
+});
 
+// ============ MESSAGES.UPDATE HANDLER (ANTI-DELETE) ============
+dave.ev.on('messages.update', async (updates) => {
+    try {
+        if (!global.antiDelSettings?.enabled) return;
+
+        for (const update of updates) {
+            const msg = update.update?.message || update.message;
+            if (msg?.protocolMessage?.type === 0) {
+                await handleMessageRevocation(dave, { key: update.key, message: msg });
+            }
+        }
+    } catch (err) {
+        console.log(`Anti-delete update handler error: ${err.message}`);
+    }
+});
     // Anti-call handler
     const antiCallNotified = new Set()
 
