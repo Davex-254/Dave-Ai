@@ -18,6 +18,15 @@ const { saveSettings, loadSettings, loadXPrefix, saveXPrefix } = require("./sett
 const { writeFile } = require("./library/utils");
 const didyoumean = require('didyoumean');
 const similarity = require('similarity');
+const {
+  addPremiumUser,
+  getPremiumExpired,
+  getPremiumPosition,
+  delPremiumUser,
+  expiredCheck,
+  checkPremiumUser,
+  getAllPremiumUser
+} = require('./library/lib/premiun');
 const speed = require('performance-now')
 const { Sticker } = require('wa-sticker-formatter');
 const yts = require ('yt-search');
