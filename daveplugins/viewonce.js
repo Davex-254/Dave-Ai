@@ -63,8 +63,8 @@ let daveplug = async (m, { dave, daveshown, reply }) => {
   }
 };
 
-daveplug.help = ['viewonce'];
+daveplug.help = ['vv'];
 daveplug.tags = ['tools'];
-daveplug.command = ['vv2'];
+daveplug.command = ['vv'];
 
 module.exports = daveplug;
