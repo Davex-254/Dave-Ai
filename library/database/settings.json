@@ -5,28 +5,23 @@
   "xprefix": ".",
   "packname": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "author": "𝘿𝙖𝙫𝙚𝘼𝙄",
-
   "themeemoji": "🪀",
   "footer": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "thumb": "https://files.catbox.moe/cp8oat.jpg",
-
   "websitex": "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
   "wagc": "https://chat.whatsapp.com/CaPeB0sVRTrL3aG6asYeAC",
   "socialm": "IG: @_gifted_dave",
   "location": "Kenya",
-
   "autoread": { "enabled": false },
   "autorecord": { "enabled": false },
   "autotyping": { "enabled": false },
   "autoviewstatus": true,
   "autoreactstatus": false,
   "autolike": { "enabled": false },
-
   "welcome": false,
   "goodbye": false,
   "anticall": false,
-  "autobio": false,
-
+  "autobio": true,
   "antidelete": { "enabled": true },
   "antilinkgc": { "enabled": false },
   "antilink": { "enabled": false },
@@ -35,14 +30,21 @@
   "antipromote": { "enabled": false, "mode": "revert" },
   "antidemote": { "enabled": false, "mode": "revert" },
   "antibot": {},
-
   "areact": {
     "enabled": false,
     "chats": {},
     "emojis": ["😂", "🔥", "😎", "👍", "💀", "❤️", "🤖", "🥵", "🙌", "💯"],
     "mode": "random"
   },
-
+  "warnings": {
+    "enabled": true,
+    "maxWarnings": 3,
+    "chats": {}
+  },
+  "online": true,
+  "publicMode": true,
+  "onlygroup": false,
+  "onlypc": false,
   "messages": {
     "success": "✅ Done.",
     "admin": "Admin only.",
