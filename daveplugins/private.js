@@ -3,7 +3,11 @@ const axios = require("axios");
 let daveplug = async (m, { daveshown, reply, dave }) => {
     if (!daveshown) return reply(mess.owner);
 
-    dave.public = false;
+    const settings = global.settings;
+    settings.public = false;
+    global.saveSettings(settings);
+    global.settings = settings;
+
     reply('Successfully changed to Self Usage mode.');
 };
 
