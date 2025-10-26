@@ -1018,6 +1018,37 @@ case 'whois': {
 }
 break
 
+case 'welcomemessage':
+case 'connectmessage': 
+case 'inboxmessage': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    const settings = global.settings
+    
+    if (q === 'on') {
+        if (settings.showConnectMsg) return reply('Connection message is already enabled')
+        
+        settings.showConnectMsg = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Connection message enabled')
+    } 
+    else if (q === 'off') {
+        if (!settings.showConnectMsg) return reply('Connection message is already disabled')
+        
+        settings.showConnectMsg = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Connection message disabled')
+    } 
+    else {
+        const status = settings.showConnectMsg ? 'enabled' : 'disabled'
+        reply(`Connection message is currently ${status}. Use: ${prefix}connectmessage on/off`)
+    }
+}
+break
+
 case 'checkphone': {
     try {
         let target;
