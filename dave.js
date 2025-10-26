@@ -946,6 +946,173 @@ case 'antibot': {
 }
 break;
 
+case 'request':
+case 'joinrequests': {
+    try {
+        if (!m.isGroup) return reply("This command only works in groups.");
+        if (!isBotAdmins) return reply("I need admin rights to check requests.");
+        if (!daveshown && !isAdmins) return reply("Only group admins can use this command.");
+
+        // Add processing reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '...', key: m.key }
+        });
+
+        const response = await dave.groupRequestParticipantsList(m.chat);
+        if (!response || response.length === 0) {
+            return reply("No pending join requests.");
+        }
+
+        let replyMessage = `Join Request List:\n`;
+        response.forEach((request, index) => {
+            const { jid, request_method, request_time } = request;
+            const formattedTime = new Date(parseInt(request_time) * 1000).toLocaleString();
+            replyMessage += `\nNo. ${index + 1}`;
+            replyMessage += `\nJID: ${jid}`;
+            replyMessage += `\nMethod: ${request_method}`;
+            replyMessage += `\nTime: ${formattedTime}\n`;
+        });
+
+        // Add success reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✓', key: m.key }
+        });
+
+        await reply(replyMessage);
+
+    } catch (err) {
+        console.error('Request Command Error:', err);
+
+        // Add error reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✗', key: m.key }
+        });
+
+        await reply("Failed to fetch requests.");
+    }
+}
+break;
+
+
+case 'approve':
+case 'accept': {
+    try {
+        if (!m.isGroup) return reply("This command only works in groups.");
+        if (!isBotAdmins) return reply("I need admin rights to approve requests.");
+        if (!daveshown && !isAdmins) return reply("Only group admins can use this command.");
+
+        // Add processing reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '...', key: m.key }
+        });
+
+        const pending = await dave.groupRequestParticipantsList(m.chat);
+        if (!pending || pending.length === 0) {
+            return reply("No pending participants.");
+        }
+
+        let approvedList = [];
+        let message = "Approved users:\n\n";
+
+        for (const user of pending) {
+            try {
+                await dave.groupRequestParticipantsUpdate(m.chat, [user.jid], "approve");
+                message += `@${user.jid.split("@")[0]}\n`;
+                approvedList.push(user.jid);
+            } catch {}
+        }
+
+        // Add success reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✓', key: m.key }
+        });
+
+        await dave.sendMessage(m.chat, {
+            text: message,
+            mentions: approvedList
+        });
+
+    } catch (err) {
+        console.error('Approve Command Error:', err);
+
+        // Add error reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✗', key: m.key }
+        });
+
+        await reply("Failed to approve requests.");
+    }
+}
+break;
+
+case 'reject':
+case 'decline': {
+    try {
+        if (!m.isGroup) return reply("This command only works in groups.");
+        if (!isBotAdmins) return reply("I need admin rights to reject requests.");
+        if (!daveshown && !isAdmins) return reply("Only group admins can use this command.");
+
+        // Add processing reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '...', key: m.key }
+        });
+
+        // Reject specific user if mentioned
+        if (mentioned && mentioned.length > 0) {
+            const jid = mentioned[0];
+            try {
+                await dave.groupRequestParticipantsUpdate(m.chat, [jid], "reject");
+                await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
+                return await reply(`Rejected: @${jid.split("@")[0]}`, { mentions: [jid] });
+            } catch {
+                return reply("Failed to reject user or user not in pending list.");
+            }
+        }
+
+        // Reject specific user by text
+        if (text) {
+            const jid = text.includes("@s.whatsapp.net")
+                ? text
+                : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+
+            try {
+                await dave.groupRequestParticipantsUpdate(m.chat, [jid], "reject");
+                await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
+                return await reply(`Rejected: @${jid.split("@")[0]}`, { mentions: [jid] });
+            } catch {
+                return reply("Failed to reject user or user not in pending list.");
+            }
+        }
+
+        // Reject all pending participants
+        const pending = await dave.groupRequestParticipantsList(m.chat);
+        if (!pending || pending.length === 0) {
+            return reply("No pending participants.");
+        }
+
+        let rejectedList = [];
+        let message = "Rejected users:\n\n";
+
+        for (const user of pending) {
+            try {
+                await dave.groupRequestParticipantsUpdate(m.chat, [user.jid], "reject");
+                message += `@${user.jid.split("@")[0]}\n`;
+                rejectedList.push(user.jid);
+            } catch {}
+        }
+
+        // Add success reaction
+        await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
+        await dave.sendMessage(m.chat, { text: message, mentions: rejectedList });
+
+    } catch (err) {
+        console.error('Reject Command Error:', err);
+        await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
+        reply("Failed to reject requests.");
+    }
+}
+break;
+
 case 'sc':
 case 'git':
 case 'deployme':
