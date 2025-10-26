@@ -1,6 +1,6 @@
 {
   "name": "babyboy",
-  "version": "3.0.0",
+  "version": "1.0.2",
   "description": "Dave hobby bot",
   "main": "index.js",
   "type": "commonjs",
