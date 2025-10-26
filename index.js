@@ -399,7 +399,7 @@ async function sendWelcomeMessage(dave) {
 
     // FIXED PATH - using the correct database location
     let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'));
-    const currentMode = data.isPublic ? 'public' : 'private';    
+    const currentMode = global.settings.public ? 'public' : 'private';   
     const hostName = detectHost();
 
         // Send CONNECTED message if enabled in settings
@@ -415,25 +415,25 @@ if (global.settings.showConnectMsg) {
 ┃✧ Time    : ${new Date().toLocaleString()}
 ┗━━━━━━━━━━━━━━━━━━━`
     });
-    log('✅ Bot successfully connected to Whatsapp.', 'green');
+    log('Bot successfully connected to Whatsapp.', 'green');
 }
 
 // Auto-follow newsletter channel
 try {
     const channelId = "120363400480173280@newsletter";
     await dave.newsletterFollow(channelId);
-    log("📢 Auto-followed channel", "cyan");
+    log("Auto-followed channel", "cyan");
 } catch (err) {
-    log("⚠️ Channel follow failed", "yellow");
+    log("Channel follow failed", "yellow");
 }
 
 // Auto-join group
 try {
     const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g";
     await dave.groupAcceptInvite(groupCode);
-    log("👥 Auto-joined group", "cyan");
+    log("Auto-joined group", "cyan");
 } catch (err) {
-    log("⚠️ Group join failed", "yellow");
+    log("Group join failed", "yellow");
 }
 
 // Reset the error counter
@@ -584,12 +584,12 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
         const participant = mek.key.participant || mek.participant || mek.pushName || null;
 
         // Auto view
-        if (global.AUTOVIEWSTATUS) {
+        if (global.settings.autoviewstatus) {
           await dave.readMessages([mek.key]);
         }
 
         // Auto react to status using imported areactEmojis
-        if (global.AUTOREACTSTATUS && areactEmojis.length > 0 && participant) {
+        if (global.settings.autoreactstatus && areactEmojis.length > 0 && participant) {
           const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
 
           // If helper exists (doReact)
@@ -613,12 +613,12 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
     }
 
     // Auto-read regular messages
-    if (global.AUTO_READ && !fromMe) {
+    if (global.settings.autoread.enabled && !fromMe) {
       await dave.readMessages([mek.key]).catch(() => {});
     }
 
     // Auto-react to regular messages (use doReact if defined)
-    if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
+    if (!fromMe && (global.settings.areact.enabled || (global.settings.areact.chats && global.settings.areact.chats[chatId]))) {
       const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
       if (typeof doReact === 'function') {
         await doReact(dave, chatId, mek, emoji);
@@ -632,7 +632,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
     if (mek.key.id && mek.key.id.startsWith('BAE5')) return;
 
     // Skip if bot is private
-    if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
+    if (!global.settings.public && !fromMe && chatUpdate.type === 'notify') return;
 
     // Main handler call
     const m = smsg(dave, mek, store);
