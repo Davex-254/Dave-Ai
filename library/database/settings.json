@@ -26,6 +26,7 @@
   "antilinkgc": { "enabled": false },
   "antilink": { "enabled": false },
   "antitag": {},
+  "antidelete": { "enabled": true },
   "antibadword": {},
   "antipromote": { "enabled": false, "mode": "revert" },
   "antidemote": { "enabled": false, "mode": "revert" },
@@ -42,7 +43,7 @@
     "chats": {}
   },
   "online": true,
-  "publicMode": true,
+  "public": true,
   "onlygroup": false,
   "onlypc": false,
   "messages": {
