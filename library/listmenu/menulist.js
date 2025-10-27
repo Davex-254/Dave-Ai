@@ -107,13 +107,12 @@ function getMenuData() {
 // Get dynamic data
 const menuData = getMenuData()
 
-// Menu template with EXACT placeholders that match your menu.js
 const Menu = `
-╭━━━〔 *{botname}* 〕━━━╮
-┃ ✦ Owner    : *${global.ownername || 'Dave Owner'}*
+╭━━━〔 *${global.botname}* 〕━━━╮
+┃ ✦ Owner    : *${global.ownername}*
 ┃ ✦ Version  : *1.0.0*
-┃ ✦ BotType  : *${global.typebot || 'Multi-Device'}*
-┃ ✦ Prefix   : *{xprefix}*
+┃ ✦ BotType  : *${global.typebot}*
+┃ ✦ Prefix   : *${global.xprefix}*
 ┃ ✦ Mode     : *${menuData.mode}*
 ┃ ✦ Host     : *{host}*
 ┃ ✦ Speed    : *{ping} ms*
@@ -123,341 +122,308 @@ const Menu = `
 ┃ ✦ Commands : *{cmds}*
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│    *MENU SETTINGS*    │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}setmenu text
-> {xprefix}setmenu image  
-> {xprefix}setmenu video
-> {xprefix}setmenuimage <url>
-> {xprefix}setmenuvideo <url>
+╰┈➤ *MENU SETTINGS*
+• ${global.xprefix}setmenu text
+• ${global.xprefix}setmenu image  
+• ${global.xprefix}setmenu video
+• ${global.xprefix}setmenuimage <url>
+• ${global.xprefix}setmenuvideo <url>
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│     *BUG COMMANDS*    │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}daveandroid
-> {xprefix}daveandroid2
-> {xprefix}systemuicrash
-> {xprefix}xsysui
-> {xprefix}xios
-> {xprefix}xios2
-> {xprefix}dave-group
+╰┈➤ *ʙᴜɢ ᴀɴᴅʀᴏɪᴅ*
+• ${global.xprefix}daveandroid
+• ${global.xprefix}daveandroid2
+• ${global.xprefix}systemuicrash
+• ${global.xprefix}xsysui
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│     *OWNER MENU*      │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}join
-> {xprefix}shutdown
-> {xprefix}restart
-> {xprefix}autoread [on/off]
-> {xprefix}autotyping [on/off]
-> {xprefix}autorecording [on/off]
-> {xprefix}autoreact [on/off]
-> {xprefix}autobio [on/off]
-> {xprefix}autoswview [on/off]
-> {xprefix}mode [private/public]
-> {xprefix}block
-> {xprefix}unblock
-> {xprefix}backup
-> {xprefix}addowner
-> {xprefix}delowner
-> {xprefix}setprefix
-> {xprefix}setnamabot
-> {xprefix}setbiobot
-> {xprefix}setppbot
-> {xprefix}delppbot
-> {xprefix}onlygroup [on/off]
-> {xprefix}onlypc [on/off]
-> {xprefix}unavailable [on/off]
-> {xprefix}anticall [on/off/status]
-> {xprefix}listgc
-> {xprefix}listowner
-> {xprefix}clearchat
-> {xprefix}on
-> {xprefix}off
-> {xprefix}anticall whitelist
-> {xprefix}areact charts
-> {xprefix}antiedit
-> {xprefix}setpp
-> {xprefix}disp-1
-> {xprefix}disp-7
-> {xprefix}disp-90
-> {xprefix}disp-off
-> {xprefix}antidelete 
-> {xprefix}vv
+╰┈➤ *ʙᴜɢ ɪᴏꜱ*
+• ${global.xprefix}xios
+• ${global.xprefix}xios2
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│     *GROUP MENU*      │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}closetime
-> {xprefix}opentime
-> {xprefix}kick
-> {xprefix}add
-> {xprefix}promote
-> {xprefix}demote
-> {xprefix}setdesc
-> {xprefix}setppgc
-> {xprefix}tagall
-> {xprefix}hidetag
-> {xprefix}group [option]
-> {xprefix}linkgc
-> {xprefix}revoke
-> {xprefix}listonline
-> {xprefix}welcome [on/off]
-> {xprefix}antilink [on/off]
-> {xprefix}antilinkgc [on/off]
-> {xprefix}warning
-> {xprefix}unwarning
-> {xprefix}kill
-> {xprefix}close
-> {xprefix}open
-> {xprefix}vcf
-> {xprefix}vcf2
+╰┈➤ *ʙᴜɢ ɢʀᴏᴜᴘ ᴄʜᴀᴛ*
+• ${global.xprefix}dave-group
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│      *MAIN MENU*      │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}menu
-> {xprefix}buypremium
-> {xprefix}runtime
-> {xprefix}script
-> {xprefix}donate
-> {xprefix}owner
-> {xprefix}dev
-> {xprefix}request
-> {xprefix}Quran
-> {xprefix}Bible
+╰┈➤ *ᴏᴡɴᴇʀ ᴍᴇɴᴜ*
+• ${global.xprefix}join
+• ${global.xprefix}shutdown
+• ${global.xprefix}restart
+• ${global.xprefix}autoread [on/off]
+• ${global.xprefix}autotyping [on/off]
+• ${global.xprefix}autorecording [on/off]
+• ${global.xprefix}autoreact [on/off]
+• ${global.xprefix}autobio [on/off]
+• ${global.xprefix}autoswview [on/off]
+• ${global.xprefix}mode [private/public]
+• ${global.xprefix}block
+• ${global.xprefix}unblock
+• ${global.xprefix}backup
+• ${global.xprefix}addowner
+• ${global.xprefix}delowner
+• ${global.xprefix}setprefix
+• ${global.xprefix}setnamabot
+• ${global.xprefix}setbiobot
+• ${global.xprefix}setppbot
+• ${global.xprefix}delppbot
+• ${global.xprefix}onlygroup [on/off]
+• ${global.xprefix}onlypc [on/off]
+• ${global.xprefix}unavailable [on/off]
+• ${global.xprefix}anticall [on/off/status]
+• ${global.xprefix}listgc
+• ${global.xprefix}listowner
+• ${global.xprefix}clearchat
+• ${global.xprefix}on
+• ${global.xprefix}off
+• ${global.xprefix}anticall whitelist
+• ${global.xprefix}areact charts
+• ${global.xprefix}antiedit
+• ${global.xprefix}setpp
+• ${global.xprefix}disp-1
+• ${global.xprefix}disp-7
+• ${global.xprefix}disp-90
+• ${global.xprefix}disp-off
+• ${global.xprefix}antidelete 
+• ${global.xprefix}vv
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│    *CONVERT MENU*     │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}sticker
-> {xprefix}smeme
-> {xprefix}take
-> {xprefix}toimage
-> {xprefix}toaudio
-> {xprefix}tovn
-> {xprefix}togif
-> {xprefix}tourl
-> {xprefix}url
-> {xprefix}tourl2
-> {xprefix}toqr
-> {xprefix}tovideo
-> {xprefix}emojimix
-> {xprefix}stickerwm
-> {xprefix}stickermeme
-> {xprefix}hd
-> {xprefix}remini
-> {xprefix}hdvideo
-> {xprefix}readmore
+╰┈➤ *ɢʀᴏᴜᴘ ᴍᴇɴᴜ*
+• ${global.xprefix}closetime
+• ${global.xprefix}opentime
+• ${global.xprefix}kick
+• ${global.xprefix}add
+• ${global.xprefix}promote
+• ${global.xprefix}demote
+• ${global.xprefix}setdesc
+• ${global.xprefix}setppgc
+• ${global.xprefix}tagall
+• ${global.xprefix}hidetag
+• ${global.xprefix}group [option]
+• ${global.xprefix}linkgc
+• ${global.xprefix}revoke
+• ${global.xprefix}listonline
+• ${global.xprefix}welcome [on/off]
+• ${global.xprefix}antilink [on/off]
+• ${global.xprefix}antilinkgc [on/off]
+• ${global.xprefix}warning
+• ${global.xprefix}unwarning
+• ${global.xprefix}kill
+• ${global.xprefix}close
+• ${global.xprefix}open
+• ${global.xprefix}vcf
+• ${global.xprefix}vcf2
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *DOWNLOAD MENU*     │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}play
-> {xprefix}ytmp3
-> {xprefix}ytmp4
-> {xprefix}fb
-> {xprefix}igdl
-> {xprefix}tiktok
-> {xprefix}mediafire
-> {xprefix}snackvideo
-> {xprefix}capcut
-> {xprefix}playdoc
-> {xprefix}apk
-> {xprefix}instagram/ig
+╰┈➤ *ᴍᴀɪɴ ᴍᴇɴᴜ*
+• ${global.xprefix}menu
+• ${global.xprefix}buypremium
+• ${global.xprefix}runtime
+• ${global.xprefix}script
+• ${global.xprefix}donate
+• ${global.xprefix}owner
+• ${global.xprefix}dev
+• ${global.xprefix}request
+• ${global.xprefix}Quran
+• ${global.xprefix}Bible
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│    *AI / CHATGPT*     │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}ai
-> {xprefix}ai2
-> {xprefix}gpt
-> {xprefix}gemma
-> {xprefix}mistral
-> {xprefix}gemini
-> {xprefix}luminai
-> {xprefix}openai
-> {xprefix}dave
+╰┈➤ *ᴄᴏɴᴠᴇʀᴛ ᴍᴇɴᴜ*
+• ${global.xprefix}sticker
+• ${global.xprefix}smeme
+• ${global.xprefix}take
+• ${global.xprefix}toimage
+• ${global.xprefix}toaudio
+• ${global.xprefix}tovn
+• ${global.xprefix}togif
+• ${global.xprefix}tourl
+• ${global.xprefix}url
+• ${global.xprefix}tourl2
+• ${global.xprefix}toqr
+• ${global.xprefix}tovideo
+• ${global.xprefix}emojimix
+• ${global.xprefix}stickerwm
+• ${global.xprefix}stickermeme
+• ${global.xprefix}hd
+• ${global.xprefix}remini
+• ${global.xprefix}hdvideo
+• ${global.xprefix}readmore
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│     *IMAGE AI*        │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}imagebing
-> {xprefix}edit-ai
-> {xprefix}toanime
-> {xprefix}toreal
-> {xprefix}remove-wm
-> {xprefix}editanime
-> {xprefix}faceblur
-> {xprefix}removebg
+╰┈➤ *ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴇɴᴜ*
+• ${global.xprefix}play
+• ${global.xprefix}ytmp3
+• ${global.xprefix}ytmp4
+• ${global.xprefix}fb
+• ${global.xprefix}igdl
+• ${global.xprefix}tiktok
+• ${global.xprefix}mediafire
+• ${global.xprefix}snackvideo
+• ${global.xprefix}capcut
+• ${global.xprefix}playdoc
+• ${global.xprefix}apk
+• ${global.xprefix}instagram/ig
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *SEARCH TOOLS*      │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}pinterest
-> {xprefix}yts
-> {xprefix}lyrics
-> {xprefix}dictionary
-> {xprefix}weather
-> {xprefix}google
-> {xprefix}playstore
-> {xprefix}playstation
-> {xprefix}animesearch
-> {xprefix}whatsong
-> {xprefix}getpastebin
-> {xprefix}getpp
+╰┈➤ *ᴀɪ / ᴄʜᴀᴛɢᴘᴛ*
+• ${global.xprefix}ai
+• ${global.xprefix}ai2
+• ${global.xprefix}gpt
+• ${global.xprefix}gemma
+• ${global.xprefix}mistral
+• ${global.xprefix}gemini
+• ${global.xprefix}luminai
+• ${global.xprefix}openai
+• ${global.xprefix}dave
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│       *SPORTS*        │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}fixtures
-> {xprefix}epl
-> {xprefix}laliga
-> {xprefix}bundesliga
-> {xprefix}serie-a
-> {xprefix}ligue-1
+╰┈➤ *ɪᴍᴀɢᴇ ᴀɪ*
+• ${global.xprefix}imagebing
+• ${global.xprefix}edit-ai
+• ${global.xprefix}toanime
+• ${global.xprefix}toreal
+• ${global.xprefix}remove-wm
+• ${global.xprefix}editanime
+• ${global.xprefix}faceblur
+• ${global.xprefix}removebg
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *DEVELOPER MENU*    │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}githubstalk
-> {xprefix}gitclone
-> {xprefix}getfile
-> {xprefix}setvar
-> {xprefix}getvar
-> {xprefix}update
-> {xprefix}enc
-> {xprefix}tojs
-> {xprefix}listcase
-> {xprefix}pair
+╰┈➤ *sᴇᴀʀᴄʜ ᴛᴏᴏʟs*
+• ${global.xprefix}pinterest
+• ${global.xprefix}yts
+• ${global.xprefix}lyrics
+• ${global.xprefix}dictionary
+• ${global.xprefix}weather
+• ${global.xprefix}google
+• ${global.xprefix}playstore
+• ${global.xprefix}playstation
+• ${global.xprefix}animesearch
+• ${global.xprefix}whatsong
+• ${global.xprefix}getpastebin
+• ${global.xprefix}getpp
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *EMAIL & UTILS*     │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}sendemail
-> {xprefix}tempmail
-> {xprefix}myip
-> {xprefix}trackip
-> {xprefix}ocr
-> {xprefix}ssweb
-> {xprefix}trt
+╰┈➤ *ꜱᴘᴏʀᴛꜱ*
+• ${global.xprefix}fixtures
+• ${global.xprefix}epl
+• ${global.xprefix}laliga
+• ${global.xprefix}bundesliga
+• ${global.xprefix}serie-a
+• ${global.xprefix}ligue-1
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│ *CHANNEL & STATUS*    │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}reactch
-> {xprefix}idch
-> {xprefix}uploadstatus
-> {xprefix}save
-> {xprefix}viewonce
-> {xprefix}rvo
+╰┈➤ *ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴍᴇɴᴜ*
+• ${global.xprefix}githubstalk
+• ${global.xprefix}gitclone
+• ${global.xprefix}getfile
+• ${global.xprefix}setvar
+• ${global.xprefix}getvar
+• ${global.xprefix}update
+• ${global.xprefix}enc
+• ${global.xprefix}tojs
+• ${global.xprefix}listcase
+• ${global.xprefix}pair
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *GAMES & FUN*       │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}truth
-> {xprefix}dare
-> {xprefix}meme
-> {xprefix}brat
-> {xprefix}neko
-> {xprefix}shinobu
-> {xprefix}megumin
-> {xprefix}bully
-> {xprefix}cuddle
-> {xprefix}cry
-> {xprefix}hug
-> {xprefix}awoo
-> {xprefix}kiss
-> {xprefix}lick
-> {xprefix}pat
-> {xprefix}smug
-> {xprefix}bonk
-> {xprefix}yeet
-> {xprefix}blush
-> {xprefix}smile
-> {xprefix}wave
-> {xprefix}highfive
-> {xprefix}handhold
-> {xprefix}nom
-> {xprefix}bite
-> {xprefix}glomp
-> {xprefix}slap
-> {xprefix}kill
-> {xprefix}happy
-> {xprefix}wink
-> {xprefix}poke
-> {xprefix}dance
-> {xprefix}cringe
-> {xprefix}trap
-> {xprefix}blowjob
-> {xprefix}hentai
-> {xprefix}boobs
-> {xprefix}ass
-> {xprefix}pussy
-> {xprefix}thighs
-> {xprefix}lesbian
-> {xprefix}lewdneko
-> {xprefix}cum
-> {xprefix}woof
-> {xprefix}8ball
-> {xprefix}goose
-> {xprefix}gecg
-> {xprefix}feed
-> {xprefix}avatar
-> {xprefix}fox_girl
-> {xprefix}lizard
-> {xprefix}spank
-> {xprefix}meow
-> {xprefix}tickle
+╰┈➤ *ᴇᴍᴀɪʟ & ᴜᴛɪʟs*
+• ${global.xprefix}sendemail
+• ${global.xprefix}tempmail
+• ${global.xprefix}myip
+• ${global.xprefix}trackip
+• ${global.xprefix}ocr
+• ${global.xprefix}ssweb
+• ${global.xprefix}trt
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│  *TEXT EFFECTS*       │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}glitchtext
-> {xprefix}writetext
-> {xprefix}advancedglow
-> {xprefix}typographytext
-> {xprefix}pixelglitch
-> {xprefix}neonglitch
-> {xprefix}flagtext
-> {xprefix}flag3dtext
-> {xprefix}deletingtext
-> {xprefix}blackpinkstyle
-> {xprefix}glowingtext
-> {xprefix}underwatertext
-> {xprefix}logomaker
-> {xprefix}cartoonstyle
-> {xprefix}papercutstyle
-> {xprefix}watercolortext
-> {xprefix}effectclouds
-> {xprefix}blackpinklogo
-> {xprefix}gradienttext
-> {xprefix}summerbeach
-> {xprefix}luxurygold
-> {xprefix}multicoloredneon
-> {xprefix}sandsummer
-> {xprefix}galaxywallpaper
-> {xprefix}1917style
-> {xprefix}makingneon
-> {xprefix}royaltext
-> {xprefix}freecreate
-> {xprefix}galaxystyle
-> {xprefix}lighteffects
+╰┈➤ *ᴄʜᴀɴɴᴇʟ & ꜱᴛᴀᴛᴜꜱ*
+• ${global.xprefix}reactch
+• ${global.xprefix}idch
+• ${global.xprefix}uploadstatus
+• ${global.xprefix}save
+• ${global.xprefix}viewonce
+• ${global.xprefix}rvo
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│   *SPAM & TOOLS*      │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-> {xprefix}nglspam
-> {xprefix}sendchat
+╰┈➤ *ɢᴀᴍᴇꜱ & ꜰᴜɴ*
+• ${global.xprefix}truth
+• ${global.xprefix}dare
+• ${global.xprefix}meme
+• ${global.xprefix}brat
+• ${global.xprefix}neko
+• ${global.xprefix}shinobu
+• ${global.xprefix}megumin
+• ${global.xprefix}bully
+• ${global.xprefix}cuddle
+• ${global.xprefix}cry
+• ${global.xprefix}hug
+• ${global.xprefix}awoo
+• ${global.xprefix}kiss
+• ${global.xprefix}lick
+• ${global.xprefix}pat
+• ${global.xprefix}smug
+• ${global.xprefix}bonk
+• ${global.xprefix}yeet
+• ${global.xprefix}blush
+• ${global.xprefix}smile
+• ${global.xprefix}wave
+• ${global.xprefix}highfive
+• ${global.xprefix}handhold
+• ${global.xprefix}nom
+• ${global.xprefix}bite
+• ${global.xprefix}glomp
+• ${global.xprefix}slap
+• ${global.xprefix}kill
+• ${global.xprefix}happy
+• ${global.xprefix}wink
+• ${global.xprefix}poke
+• ${global.xprefix}dance
+• ${global.xprefix}cringe
+• ${global.xprefix}trap
+• ${global.xprefix}blowjob
+• ${global.xprefix}hentai
+• ${global.xprefix}boobs
+• ${global.xprefix}ass
+• ${global.xprefix}pussy
+• ${global.xprefix}thighs
+• ${global.xprefix}lesbian
+• ${global.xprefix}lewdneko
+• ${global.xprefix}cum
+• ${global.xprefix}woof
+• ${global.xprefix}8ball
+• ${global.xprefix}goose
+• ${global.xprefix}gecg
+• ${global.xprefix}feed
+• ${global.xprefix}avatar
+• ${global.xprefix}fox_girl
+• ${global.xprefix}lizard
+• ${global.xprefix}spank
+• ${global.xprefix}meow
+• ${global.xprefix}tickle
 
-╭━━━━━━━━━━━━━━━━━━━━━━━╮
-│      *FOOTER*         │
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
-*{botname}*
-*Premium Performance* | 🚀 *Lightning Fast*
+╰┈➤ *ᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛꜱ*
+• ${global.xprefix}glitchtext
+• ${global.xprefix}writetext
+• ${global.xprefix}advancedglow
+• ${global.xprefix}typographytext
+• ${global.xprefix}pixelglitch
+• ${global.xprefix}neonglitch
+• ${global.xprefix}flagtext
+• ${global.xprefix}flag3dtext
+• ${global.xprefix}deletingtext
+• ${global.xprefix}blackpinkstyle
+• ${global.xprefix}glowingtext
+• ${global.xprefix}underwatertext
+• ${global.xprefix}logomaker
+• ${global.xprefix}cartoonstyle
+• ${global.xprefix}papercutstyle
+• ${global.xprefix}watercolortext
+• ${global.xprefix}effectclouds
+• ${global.xprefix}blackpinklogo
+• ${global.xprefix}gradienttext
+• ${global.xprefix}summerbeach
+• ${global.xprefix}luxurygold
+• ${global.xprefix}multicoloredneon
+• ${global.xprefix}sandsummer
+• ${global.xprefix}galaxywallpaper
+• ${global.xprefix}1917style
+• ${global.xprefix}makingneon
+• ${global.xprefix}royaltext
+• ${global.xprefix}freecreate
+• ${global.xprefix}galaxystyle
+• ${global.xprefix}lighteffects
 
-*Tip: Use {xprefix}setmenu text/image/video to change display mode!*
+╰┈➤ *ꜱᴘᴀᴍ & ᴛᴏᴏʟꜱ*
+• ${global.xprefix}nglspam
+• ${global.xprefix}sendchat
+
+*${global.botname}*
+   *Premium Performance* | 🚀 *Lightning Fast*
+
+   *Tip: Use ${global.xprefix}setmenu text/image/video to change display mode!*
 `
 
 module.exports = Menu
@@ -468,4 +434,4 @@ fs.watchFile(file, () => {
     console.log(chalk.redBright(`Update ${__filename}`))
     delete require.cache[file]
     require(file)
-})
+}
