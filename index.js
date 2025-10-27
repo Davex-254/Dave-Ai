@@ -359,7 +359,6 @@ async function sendWelcomeMessage(dave) {
         if (env.VERCEL || env.VERCEL_ENV || env.VERCEL_URL) return 'Vercel';
         if (env.RAILWAY_ENVIRONMENT || env.RAILWAY_PROJECT_ID) return 'Railway';
         if (env.REPL_ID || env.REPL_SLUG) return 'Replit';
-
         const hostname = os.hostname().toLowerCase();
         if (!env.CLOUD_PROVIDER && !env.DYNO && !env.VERCEL && !env.RENDER) {
             if (hostname.includes('vps') || hostname.includes('server')) return 'VPS';
@@ -373,12 +372,14 @@ async function sendWelcomeMessage(dave) {
         global.isBotConnected = true;
         const pNumber = dave.user.id.split(':')[0] + '@s.whatsapp.net';
 
+        // Keep message count for global tracking
         let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'));
+
         const currentMode = global.settings.public ? 'public' : 'private';   
         const hostName = detectHost();
 
         if (global.settings.showConnectMsg) {
-            await dave.sendMessage(dave.user.id, {
+            await dave.sendMessage(pNumber, {
                 text: `
 ┏━━━━━✧ CONNECTED ✧━━━━━━━
 ┃✧ Prefix  : ${global.settings.xprefix}
