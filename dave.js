@@ -38,8 +38,9 @@ try {
 const from = m.key.remoteJid
 var body = (m.mtype === 'interactiveResponseMessage') ? JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id : (m.mtype === 'conversation') ? m.message.conversation : (m.mtype == 'imageMessage') ? m.message.imageMessage.caption : (m.mtype == 'videoMessage') ? m.message.videoMessage.caption : (m.mtype == 'extendedTextMessage') ? m.message.extendedTextMessage.text : (m.mtype == 'buttonsResponseMessage') ? m.message.buttonsResponseMessage.selectedButtonId : (m.mtype == 'listResponseMessage') ? m.message.listResponseMessage.singleSelectReply.selectedRowId : (m.mtype == 'templateButtonReplyMessage') ? m.message.templateButtonReplyMessage.selectedId : (m.mtype == 'messageContextInfo') ? (m.message.buttonsResponseMessage?.selectedButtonId || m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text) : ""
 var msgR = m.message.extendedTextMessage?.contextInfo?.quotedMessage;  
-//////////Libraryfunction///////////////////////
-const { smsg, fetchJson, getBuffer, fetchBuffer, getGroupAdmins, TelegraPh, isUrl, hitungmundur, sleep, clockString, checkBandwidth, runtime, tanggal, getRandom } = require('./library/lib/function')
+////////// Library functions //////////////////////
+const { smsg, fetchJson, getBuffer, fetchBuffer, getGroupAdmins, TelegraPh, isUrl, hitungmundur, sleep, clockString, checkBandwidth, runtime, tanggal, getRandom } = require('./library/lib/function');
+
 const budy = (typeof m.text === 'string') ? m.text : '';
 const prefix = global.xprefix || '.';
 const isCmd = budy.startsWith(prefix);
@@ -49,27 +50,34 @@ const text = args.join(" ");
 const q = text;
 
 const sender = m.key.fromMe 
-  ? (dave.user.id.split(':')[0] + '@s.whatsapp.net') 
-  : (m.key.participant || m.key.remoteJid);
+    ? (dave.user.id.split(':')[0] + '@s.whatsapp.net') 
+    : (m.key.participant || m.key.remoteJid);
 
+const senderNumber = sender.split('@')[0];
 const botNumber = dave.user.id.split(':')[0];
 
 // Normalize owner to array
 let owners = [];
 if (Array.isArray(global.owner)) {
-  owners = global.owner.map(v => v.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net');
+    owners = global.owner.map(v => v.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net');
 } else if (typeof global.owner === 'string' || typeof global.owner === 'number') {
-  owners = [global.owner.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net'];
+    owners = [global.owner.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net'];
 }
 
 // Combine bot + owners
 const daveshown = [botNumber + '@s.whatsapp.net', ...owners].includes(sender);
+
+// ===== PRIVATE MODE ENFORCEMENT ===== //
+if (!global.settings.public && !daveshown) {
+    return; // silently ignore non-owner commands when private
+}
+
 // Premium check
 const premuser = JSON.parse(fs.readFileSync("./library/database/premium.json"));
 const formatJid = num => num.replace(/[^0-9]/g,'') + "@s.whatsapp.net";
-const isPremium = daveshown || premuser.map(u => formatJid(u.id)).includes(m.sender);
+const isPremium = daveshown || premuser.map(u => formatJid(u.id)).includes(sender);
 
-// Pushname & quoted
+// Pushname & quoted message
 const pushname = m.pushName || senderNumber;
 const isBot = botNumber === senderNumber;
 const quoted = m.quoted || m;
@@ -77,13 +85,12 @@ const mime = (quoted.msg || quoted).mimetype || '';
 const qmsg = (quoted.msg || quoted);
 
 // Group info
-const groupMetadata = m.isGroup ? await dave.groupMetadata(from).catch(() => ({})) : {};
+const groupMetadata = m.isGroup ? await dave.groupMetadata(m.key.remoteJid).catch(() => ({})) : {};
 const groupName = m.isGroup ? groupMetadata.subject || '' : '';
 const participants = m.isGroup ? groupMetadata.participants || [] : [];
 const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : [];
 const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber + '@s.whatsapp.net') : false;
-const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false;
-
+const isAdmins = m.isGroup ? groupAdmins.includes(sender) : false;
 /////////////Setting Console//////////////////
 console.log(chalk.black(chalk.bgWhite(!command ? '[ MESSAGE ]' : '[ COMMAND ]')), chalk.black(chalk.bgGreen(new Date)), chalk.black(chalk.bgBlue(budy || m.mtype)) + '\n' + chalk.magenta('=> From'), chalk.green(pushname), chalk.yellow(m.sender) + '\n' + chalk.blueBright('=> In'), chalk.green(m.isGroup ? pushname : 'Private Chat', m.chat))
 /////////quoted functions//////////////////
@@ -181,10 +188,6 @@ if (!daveshown && global.settings.onlypc && m.isGroup) {
     }
 }
 
-// ==================== PRIVATE MODE ==================== //
-if (!global.settings.public && !daveshown) {
-    return reply("Bot is in private mode. Only owner can use commands.")
-}
 
 // ==================== EPHOTO FUNCTION ==================== //
 async function ephoto(url, texk) {
