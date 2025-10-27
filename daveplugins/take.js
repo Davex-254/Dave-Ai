@@ -60,8 +60,8 @@ let daveplug = async (m, { dave, daveshown, reply }) => {
     });
 };
 
-daveplug.help = ['wm'];
+daveplug.help = ['take'];
 daveplug.tags = ['sticker'];
-daveplug.command = ['wm'];
+daveplug.command = ['take,wm'];
 
 module.exports = daveplug;
