@@ -12,5 +12,5 @@ module.exports = {
   SESSION_ID: process.env.SESSION_ID,
   NO_PREFIX: process.env.NO_PREFIX === 'true',
   STATUS_VIEW: process.env.STATUS_VIEW === 'true',
-  updateZipUrl: "https://github.com/gifteddevsmd/Dave-Ai/archive/refs/heads/main.zip",
+  updateZipUrl: "https://github.com/gifteddevsmd/Dave-Ai/archive/zip/refs/head/main",
 };
