@@ -900,6 +900,167 @@ case 'meaning': {
 }
 break;
 
+case 'updatebot': {
+    if (!daveshown) return reply(global.mess.owner); // owner only
+    
+    const { exec } = require('child_process');
+    const fs = require('fs');
+    const path = require('path');
+    const https = require('https');
+    const { rmSync } = require('fs');
+    const settings = require('./config');
+
+    const run = (cmd) => new Promise((resolve, reject) => {
+        exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
+            if (err) return reject(new Error(stderr || stdout || err.message));
+            resolve(stdout.toString());
+        });
+    });
+
+    const hasGitRepo = async () => {
+        const gitDir = path.join(process.cwd(), '.git');
+        if (!fs.existsSync(gitDir)) return false;
+        try {
+            await run('git --version');
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const downloadFile = (url, dest, visited = new Set()) => new Promise((resolve, reject) => {
+        if (visited.has(url) || visited.size > 5) return reject(new Error('Too many redirects'));
+        visited.add(url);
+        const client = url.startsWith('https://') ? require('https') : require('http');
+        const req = client.get(url, res => {
+            if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+                const location = res.headers.location;
+                if (!location) return reject(new Error('Redirect with no Location'));
+                const nextUrl = new URL(location, url).toString();
+                res.resume();
+                return downloadFile(nextUrl, dest, visited).then(resolve).catch(reject);
+            }
+            if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+            const file = fs.createWriteStream(dest);
+            res.pipe(file);
+            file.on('finish', () => file.close(resolve));
+            file.on('error', err => {
+                fs.unlink(dest, () => reject(err));
+            });
+        });
+        req.on('error', err => fs.unlink(dest, () => reject(err)));
+    });
+
+    const extractZip = async (zipPath, outDir) => {
+        try {
+            await run('command -v unzip');
+            await run(`unzip -o '${zipPath}' -d '${outDir}'`);
+        } catch {
+            throw new Error("No unzip tool found on system");
+        }
+    };
+
+    const copyRecursive = (src, dest, ignore = [], relative = '', outList = []) => {
+        if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+        for (const entry of fs.readdirSync(src)) {
+            if (ignore.includes(entry)) continue;
+            const s = path.join(src, entry);
+            const d = path.join(dest, entry);
+            const stat = fs.lstatSync(s);
+            if (stat.isDirectory()) {
+                copyRecursive(s, d, ignore, path.join(relative, entry), outList);
+            } else {
+                fs.copyFileSync(s, d);
+                if (outList) outList.push(path.join(relative, entry).replace(/\\/g, '/'));
+            }
+        }
+    };
+
+    const updateViaGit = async () => {
+        const oldRev = (await run('git rev-parse HEAD').catch(() => 'unknown')).trim();
+        await run('git fetch --all --prune');
+        const newRev = (await run('git rev-parse origin/main')).trim();
+        const alreadyUpToDate = oldRev === newRev;
+        await run(`git reset --hard ${newRev}`);
+        await run('git clean -fd');
+        return { oldRev, newRev, alreadyUpToDate };
+    };
+
+    const updateViaZip = async () => {
+        const zipUrl = (global.settings.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
+        if (!zipUrl) throw new Error('No ZIP URL configured.');
+        const tmpDir = path.join(process.cwd(), 'tmp');
+        if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+        const zipPath = path.join(tmpDir, 'update.zip');
+        await downloadFile(zipUrl, zipPath);
+        const extractTo = path.join(tmpDir, 'update_extract');
+        if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
+        await extractZip(zipPath, extractTo);
+        const [root] = fs.readdirSync(extractTo).map(n => path.join(extractTo, n));
+        const srcRoot = fs.existsSync(root) && fs.lstatSync(root).isDirectory() ? root : extractTo;
+        
+        // PROTECT ONLY ESSENTIAL FILES - using your exact ignore pattern
+        const ignore = ['node_modules', '.git', 'davesession', 'tmp', 'data', 'library/database'];
+        
+        const copied = [];
+        copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
+        try { fs.rmSync(extractTo, { recursive: true, force: true }); } catch {}
+        try { fs.rmSync(zipPath, { force: true }); } catch {}
+        return copied;
+    };
+
+    const restartProcess = async () => {
+        try {
+            const sessionPath = path.join(process.cwd(), 'davesession');
+            const filesToDelete = [
+                'app-state-sync-version.json',
+                'message-history.json',
+                'sender-key-memory.json',
+                'baileys_store_multi.json',
+                'baileys_store.json'
+            ];
+            if (fs.existsSync(sessionPath)) {
+                for (const file of filesToDelete) {
+                    const filePath = path.join(sessionPath, file);
+                    if (fs.existsSync(filePath)) rmSync(filePath, { force: true });
+                }
+            }
+            await run('pm2 restart all');
+        } catch {
+            process.exit(0);
+        }
+    };
+
+    try {
+        await reply(global.mess.wait);
+
+        if (await hasGitRepo()) {
+            const { oldRev, newRev, alreadyUpToDate } = await updateViaGit();
+            if (alreadyUpToDate) {
+                await reply("Already up to date - no new updates available");
+            } else {
+                await reply(`Update successful - Version: ${oldRev.slice(0, 7)} to ${newRev.slice(0, 7)}\nInstalling dependencies...`);
+            }
+            await run('npm install --no-audit --no-fund');
+        } else {
+            const copiedFiles = await updateViaZip();
+            await reply(`ZIP update completed - Updated ${copiedFiles.length} files\nInstalling dependencies...`);
+            await run('npm install --no-audit --no-fund');
+        }
+
+        await reply("Restarting bot... Dave-Ai will be back online shortly");
+        
+        setTimeout(async () => {
+            await restartProcess();
+        }, 3000);
+
+    } catch (err) {
+        log(`UpdateBot Error: ${err.message}`, 'red', true);
+        await reply(`Update failed: ${err.message}\nPlease check logs and try again`);
+    }
+}
+break;
+
 case 'setmenu': {
     try {
         if (!daveshown) return reply("Owner only command!");
