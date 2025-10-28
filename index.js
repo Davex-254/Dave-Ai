@@ -359,11 +359,16 @@ Please enter this code in WhatsApp app:
     } catch (err) { 
         log(`Failed to get pairing code: ${err.message}`, 'red', true); 
         return false; 
-    }
+ }
+
 }
 
 async function sendWelcomeMessage(dave) {
     if (global.isBotConnected) return; 
+    
+    // Add debug logging
+    log('🔄 Starting sendWelcomeMessage function...', 'blue');
+    
     await delay(10000); 
 
     function detectHost() {
@@ -383,52 +388,88 @@ async function sendWelcomeMessage(dave) {
     }
 
     try {
-        if (!dave.user || global.isBotConnected) return;
+        // Check if bot is properly connected and user object exists
+        if (!dave.user) {
+            log('❌ dave.user is not available yet', 'red');
+            return;
+        }
+        
+        if (global.isBotConnected) {
+            log('⚠️ Bot already marked as connected', 'yellow');
+            return;
+        }
+        
         global.isBotConnected = true;
         const pNumber = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+        
+        log(`📱 Bot number: ${pNumber}`, 'cyan');
 
-        // Keep message count for global tracking
-        let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'));
+        // Load message count data safely
+        let data = {};
+        try {
+            data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'));
+        } catch (err) {
+            log('⚠️ Could not load messageCount.json, using empty data', 'yellow');
+            data = {};
+        }
 
-        const currentMode = global.settings.public ? 'public' : 'private';   
+        const currentMode = global.settings?.public ? 'public' : 'private';   
         const hostName = detectHost();
+        
+        log(`🔧 Settings check - showConnectMsg: ${global.settings?.showConnectMsg}`, 'yellow');
 
-        if (global.settings.showConnectMsg) {
-            await dave.sendMessage(pNumber, {
-                text: `
+        if (global.settings?.showConnectMsg) {
+            log(`📤 Attempting to send connect message...`, 'green');
+            
+            try {
+                await dave.sendMessage(pNumber, {
+                    text: `
 ┏━━━━━✧ CONNECTED ✧━━━━━━━
-┃✧ Prefix  : ${global.settings.xprefix}
+┃✧ Prefix  : ${global.settings?.xprefix || '.'}
 ┃✧ Mode    : ${currentMode}
 ┃✧ Platform: ${hostName}
-┃✧ Bot     : ${global.settings.botname}
+┃✧ Bot     : ${global.settings?.botname || 'Dave-Ai'}
 ┃✧ Status  : Active
 ┃✧ Time    : ${new Date().toLocaleString()}
 ┗━━━━━━━━━━━━━━━━━━━`
-            });
-            log('Bot successfully connected to Whatsapp.', 'green');
+                });
+                log('✅ Connect message sent successfully!', 'green');
+            } catch (sendErr) {
+                log(`❌ Failed to send connect message: ${sendErr.message}`, 'red');
+            }
+        } else {
+            log('🔇 Connect message disabled in settings', 'yellow');
         }
 
+        // Newsletter follow with better error handling
         try {
             const channelId = "120363400480173280@newsletter";
             await dave.newsletterFollow(channelId);
-            log("Auto-followed channel", "cyan");
+            log("✅ Auto-followed channel", "cyan");
         } catch (err) {
-            log("Channel follow failed", "yellow");
+            log(`⚠️ Channel follow failed: ${err.message}`, "yellow");
         }
 
+        // Group join with better error handling
         try {
             const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g";
             await dave.groupAcceptInvite(groupCode);
-            log("Auto-joined group", "cyan");
+            log("✅ Auto-joined group", "cyan");
         } catch (err) {
-            log("Group join failed", "yellow");
+            log(`⚠️ Group join failed: ${err.message}`, "yellow");
         }
 
-        deleteErrorCountFile();
-        global.errorRetryCount = 0;
+        // Cleanup error count
+        try {
+            deleteErrorCountFile();
+            global.errorRetryCount = 0;
+            log('✅ Error count reset', 'green');
+        } catch (err) {
+            log(`⚠️ Error cleanup failed: ${err.message}`, 'yellow');
+        }
 
     } catch (err) {
-        log(`Welcome message error: ${err.message}`, 'red', true);
+        log(`❌ Welcome message error: ${err.message}`, 'red', true);
     }
 }
 
