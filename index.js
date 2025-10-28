@@ -581,6 +581,8 @@ dave.ev.on('messages.upsert', async chatUpdate => {
         log(`❌ Status view/react error: ${err.message}`, 'red')
     }
 })
+
+            
 // ----------------- HANDLE MESSAGE EDIT ----------------- //
 async function handleMessageEdit(dave, update) {
     try {
@@ -718,7 +720,6 @@ dave.ev.on('call', async (calls) => {
 dave.ev.on('messages.upsert', async (chatUpdate) => {
     try {
         if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
-
         const mek = chatUpdate.messages[0];
         if (!mek.message) return;
 
@@ -726,7 +727,26 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
             ? mek.message.ephemeralMessage.message 
             : mek.message;
 
-        const chatId = mek.key.remoteJid;
+        // ========== MESSAGE BACKUP/STORAGE ==========
+        let chatId = mek.key.remoteJid;
+        let messageId = mek.key.id;
+        if (!global.messageBackup[chatId]) global.messageBackup[chatId] = {};
+
+        let textMessage = mek.message?.conversation || 
+                        mek.message?.extendedTextMessage?.text || null;
+        if (textMessage) {
+            let savedMessage = {
+                sender: mek.key.participant || mek.key.remoteJid,
+                text: textMessage,
+                timestamp: mek.messageTimestamp
+            };
+            if (!global.messageBackup[chatId][messageId]) {
+                global.messageBackup[chatId][messageId] = savedMessage;
+                saveStoredMessages(global.messageBackup);
+            }
+        }
+        // ========== END MESSAGE BACKUP ==========
+
         const fromMe = mek.key.fromMe;
 
         if (!global.settings.public && !fromMe && chatUpdate.type === 'notify') return;
@@ -737,14 +757,15 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
         }
 
         // Auto-react messages
-        if (!fromMe && (global.settings.areact?.enabled || (global.settings.areact?.chats && global.settings.areact.chats[chatId]))) {
-            const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+        if (!fromMe && areactEmojis.length > 0) {
+            const shouldReact = global.settings.areact?.enabled || 
+                               global.settings.areact?.chats?.[chatId];
             
-            // FIXED: Correct doReact function parameters
-            if (typeof doReact === 'function') {
-                await doReact(emoji, mek, dave).catch(() => {});
-            } else {
-                await dave.sendMessage(chatId, { react: { text: emoji, key: mek.key } }).catch(() => {});
+            if (shouldReact) {
+                const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+                await doReact(randomEmoji, mek, dave).catch(err => {
+                    log(`❌ Auto-react failed: ${err.message}`, 'red');
+                });
             }
         }
 
@@ -756,7 +777,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
         require('./dave')(dave, m, chatUpdate, store);
 
     } catch (err) {
-        log('Message handler error:', 'red', true)
+        log('Message handler error:', 'red', true);
     }
 });
 
