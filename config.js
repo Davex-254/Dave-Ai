@@ -34,7 +34,7 @@ global.APIKeys = {
 
 // === Export Config ===
 module.exports = {
-  BOT_NAME: process.env.BOT_NAME || '𝐃𝐀𝐕𝐄-𝐗𝐌𝐃',
+  BOT_NAME: process.env.BOT_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
   OWNER_NAME: process.env.OWNER_NAME || 'Gifted-Dave',
   OWNER_NUMBER: process.env.OWNER_NUMBER || '254104260236',
   SESSION_DIR: process.env.SESSION_DIR || './session',
