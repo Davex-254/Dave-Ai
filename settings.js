@@ -14,7 +14,7 @@ function loadSettings() {
             packname: "𝘿𝙖𝙫𝙚𝘼𝙄",
             author: "𝘿𝙖𝙫𝙚𝘼𝙄",
             themeemoji: "🪀",
-            showConnectMsg: true,
+            showConnectMsg: false,
             footer: "𝘿𝙖𝙫𝙚𝘼𝙄",
             thumb: "https://files.catbox.moe/cp8oat.jpg",
             websitex: "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
