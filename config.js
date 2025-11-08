@@ -39,6 +39,8 @@ module.exports = {
   OWNER_NUMBER: process.env.OWNER_NUMBER || '254104260236',
   SESSION_DIR: process.env.SESSION_DIR || './session',
   SESSION_ID: process.env.SESSION_ID || '',
+  MAX_MESSAGES: parseInt(process.env.MAX_MESSAGES) || 20,
+  STORE_WRITE_INTERVAL:           parseInt(process.env.STORE_WRITE_INTERVAL) || 10000,
   NO_PREFIX: process.env.NO_PREFIX === 'true',
   STATUS_VIEW: process.env.STATUS_VIEW === 'true',
   updateZipUrl: "https://codeload.github.com/gifteddevsmd/Dave-Ai/zip/refs/heads/main",
