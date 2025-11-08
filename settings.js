@@ -1,11 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// Correct absolute path to settings.json
 const settingsPath = path.join(__dirname, 'library/database/settings.json');
 
 function loadSettings() {
     if (!fs.existsSync(settingsPath)) {
-        console.error('⚠️ settings.json not found, creating a new one...');
+        console.warn('⚠️ settings.json not found, creating a new one...');
         const defaultSettings = {
             botname: "𝘿𝙖𝙫𝙚𝘼𝙄",
             ownername: "GIFTED DAVE",
@@ -21,12 +22,19 @@ function loadSettings() {
             wagc: "https://chat.whatsapp.com/CaPeB0sVRTrL3aG6asYeAC",
             socialm: "IG: @_gifted_dave",
             location: "Kenya",
+
+            // Store config
+            maxStoreMessages: 20,       // default max messages per chat
+            storeWriteInterval: 10000,  // default write interval in ms
+
+            // Automation
             autoread: { enabled: false },
-            autorecord: { enabled: false },
             autotyping: { enabled: false },
+            autorecord: { enabled: false },
             autoviewstatus: true,
-            autoreactstatus: true,
             autolike: { enabled: false },
+            autoreactstatus: true,
+            autoreactmessages: { enabled: false },
             welcome: false,
             goodbye: false,
             anticall: false,
@@ -46,10 +54,14 @@ function loadSettings() {
                 mode: "random"
             },
             warnings: { enabled: true, maxWarnings: 3, chats: {} },
+
+            // Bot mode
             online: true,
             public: true,
             onlygroup: false,
             onlypc: false,
+
+            // Messages
             mess: {
                 success: "✅ Done.",
                 admin: "Admin only.",
@@ -61,6 +73,8 @@ function loadSettings() {
                 wait: "Processing...",
                 error: "Error occurred."
             },
+
+            // Bot config
             typebot: "Plugin × case",
             session: "davesession",
             connect: true,
@@ -73,6 +87,7 @@ function loadSettings() {
         fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
         return defaultSettings;
     }
+
     return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
 }
 
@@ -80,10 +95,11 @@ function saveSettings(settings) {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
 
-
+// Load global settings
 global.settings = loadSettings();
 global.saveSettings = saveSettings;
 
+// Shortcut globals
 global.owner = global.settings.owner;
 global.ownername = global.settings.ownername;
 global.botname = global.settings.botname;
