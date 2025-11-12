@@ -5,8 +5,6 @@ const os = require('os');
 
 // ================== STORE INITIALIZATION ==================
 const { color } = require('./library/lib/color')
-
-const { default: makeWASocket } = require("@whiskeysockets/baileys")
 const NodeCache = require("node-cache")
 const readline = require("readline")
 const pino = require('pino')
@@ -26,6 +24,7 @@ const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics'
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./library/lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await: awaitHelper, sleep, reSize } = require('./library/lib/function')
 const {
+    makeWASocket
     useMultiFileAuthState,
     DisconnectReason,
     fetchLatestBaileysVersion,
@@ -36,6 +35,7 @@ const {
     downloadContentFromMessage,
     jidDecode,
     proto,
+    Browsers,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
     delay
@@ -657,7 +657,7 @@ async function tylor() {
 
     if (fs.existsSync(credsPath)) {
       console.log(chalk.yellowBright("✅ Existing session found. Starting bot without pairing..."));
-      await starttrashcore();
+      await startDave();
       return;
     }
 
@@ -665,7 +665,7 @@ async function tylor() {
       const ok = await saveSessionFromConfig();
       if (ok) {
         console.log(chalk.greenBright("✅ Session ID loaded and saved successfully. Starting bot..."));
-        await starttrashcore();
+        await startDave();
         return;
       } else {
         console.log(chalk.redBright("⚠️ SESSION_ID found but failed to save it. Falling back to pairing..."));
@@ -673,7 +673,7 @@ async function tylor() {
     }
 
     console.log(chalk.redBright("⚠️ No valid session found! You’ll need to pair a new number."));
-    await starttrashcore();
+    await startDave();
 
   } catch (error) {
     console.error(chalk.redBright("❌ Error initializing session:"), error);
