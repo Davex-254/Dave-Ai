@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-module.exports = function initAntiDelete(dave, opts = {}) {  // ✅ Changed venom to dave
+module.exports = function initAntiDelete(DaveAi, opts = {}) {  // ✅ Changed dave to DaveAi
   // FIXED: Correct paths for your project structure
   const DB_PATH = opts.dbPath || path.join(__dirname, '../database/antidelete.json');
   const STATE_PATH = path.join(__dirname, '../database/antidelete_state.json');
@@ -116,28 +116,44 @@ module.exports = function initAntiDelete(dave, opts = {}) {  // ✅ Changed veno
           m.message.stickerMessage ? 'sticker' :
           m.message.documentMessage ? 'document' : 'unknown';
 
-        const stream = await downloadContentFromMessage(
-          mediaNode,
-          mediaType === 'document'
-            ? (mediaNode.mimetype?.split('/')[0] || 'document')
-            : mediaType
-        );
+        try {
+          const stream = await downloadContentFromMessage(
+            mediaNode,
+            mediaType === 'document'
+              ? (mediaNode.mimetype?.split('/')[0] || 'document')
+              : mediaType
+          );
 
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+          let buffer = Buffer.from([]);
+          for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
 
-        addToCache(cacheKey, {
-          id,
-          chat,
-          type: mediaType,
-          sender: m.key.participant || m.key.remoteJid,
-          timestamp: Date.now(),
-          fileName: mediaNode.fileName || null,
-          mimetype: mediaNode.mimetype || null,
-          size: buffer.length,
-          contentBuffer: buffer,
-          caption: mediaNode.caption || null
-        });
+          addToCache(cacheKey, {
+            id,
+            chat,
+            type: mediaType,
+            sender: m.key.participant || m.key.remoteJid,
+            timestamp: Date.now(),
+            fileName: mediaNode.fileName || null,
+            mimetype: mediaNode.mimetype || null,
+            size: buffer.length,
+            contentBuffer: buffer,
+            caption: mediaNode.caption || null
+          });
+        } catch (err) {
+          console.error('Failed to cache media for anti-delete:', err);
+          // Still cache metadata even if media download fails
+          addToCache(cacheKey, {
+            id,
+            chat,
+            type: mediaType,
+            sender: m.key.participant || m.key.remoteJid,
+            timestamp: Date.now(),
+            fileName: mediaNode.fileName || null,
+            mimetype: mediaNode.mimetype || null,
+            caption: mediaNode.caption || null,
+            error: 'Failed to download media'
+          });
+        }
         return;
       }
 
@@ -169,35 +185,34 @@ module.exports = function initAntiDelete(dave, opts = {}) {  // ✅ Changed veno
       const cacheKey = `${chat}:${revokedId}`;
       const saved = cache.get(cacheKey);
 
+      // Don't send "not found" message - just silently skip
+      if (!saved) {
+        // console.log(`AntiDelete: Message ${revokedId} not found in cache for ${chat}`);
+        return;
+      }
+
       const isGroup = chat.endsWith('@g.us');
       let chatName = chat;
 
       if (isGroup) {
         try {
-          const meta = await dave.groupMetadata(chat);  // ✅ Changed venom to dave
+          const meta = await DaveAi.groupMetadata(chat);  // ✅ Changed dave to DaveAi
           chatName = meta?.subject || chat;
         } catch {
           chatName = chat;
         }
       }
 
-      if (!saved) {
-        await dave.sendMessage(botNumber, {  // ✅ Changed venom to dave
-          text: ` Deleted message not found in cache in ${isGroup ? 'group' : 'private chat'}: ${chatName}`
-        });
-        return;
-      }
-
       const senderJid = saved.sender || 'unknown@s.whatsapp.net';
       const userTag = `@${senderJid.split('@')[0]}`;
       const mention = [senderJid];
-      const header = ` *Anti-Delete*\nChat: ${chatName}\nUser: ${userTag}`;
+      const header = `🛡️ *Anti-Delete*\nChat: ${chatName}\nUser: ${userTag}\nTime: ${new Date(saved.timestamp).toLocaleTimeString()}`;
       const targetJid = botNumber;
 
       // TEXT MESSAGE
       if (saved.type === 'text') {
-        await dave.sendMessage(targetJid, {  // ✅ Changed venom to dave
-          text: `${header}\n\nDeleted message:\n${saved.text}`,
+        await DaveAi.sendMessage(targetJid, {  // ✅ Changed dave to DaveAi
+          text: `${header}\n\n📝 *Deleted Message:*\n${saved.text}`,
           mentions: mention
         });
         return;
@@ -205,26 +220,52 @@ module.exports = function initAntiDelete(dave, opts = {}) {  // ✅ Changed veno
 
       // MEDIA MESSAGE
       if (['image', 'video', 'audio', 'sticker', 'document'].includes(saved.type)) {
+        // Check if media download failed
+        if (saved.error === 'Failed to download media' || !saved.contentBuffer) {
+          await DaveAi.sendMessage(targetJid, {  // ✅ Changed dave to DaveAi
+            text: `${header}\n📎 Deleted ${saved.type} (media not cached)\n${saved.caption ? `Caption: ${saved.caption}` : ''}`,
+            mentions: mention
+          });
+          return;
+        }
+
         const msgOptions = {};
         switch (saved.type) {
-          case 'image': msgOptions.image = saved.contentBuffer; break;
-          case 'video': msgOptions.video = saved.contentBuffer; break;
-          case 'audio': msgOptions.audio = saved.contentBuffer; msgOptions.mimetype = saved.mimetype || 'audio/mpeg'; break;
-          case 'sticker': msgOptions.sticker = saved.contentBuffer; break;
-          case 'document': msgOptions.document = saved.contentBuffer; msgOptions.fileName = saved.fileName || 'file'; break;
+          case 'image': 
+            msgOptions.image = saved.contentBuffer; 
+            msgOptions.caption = `${header}\n${saved.caption ? `Caption: ${saved.caption}` : 'No caption'}`;
+            break;
+          case 'video': 
+            msgOptions.video = saved.contentBuffer; 
+            msgOptions.caption = `${header}\n${saved.caption ? `Caption: ${saved.caption}` : 'No caption'}`;
+            break;
+          case 'audio': 
+            msgOptions.audio = saved.contentBuffer; 
+            msgOptions.mimetype = saved.mimetype || 'audio/mpeg';
+            msgOptions.caption = header;
+            break;
+          case 'sticker': 
+            msgOptions.sticker = saved.contentBuffer; 
+            await DaveAi.sendMessage(targetJid, { text: `${header}\n📎 Deleted sticker` });  // ✅ Changed dave to DaveAi
+            return;
+          case 'document': 
+            msgOptions.document = saved.contentBuffer; 
+            msgOptions.fileName = saved.fileName || 'deleted_file';
+            msgOptions.caption = `${header}\n${saved.caption ? `Caption: ${saved.caption}` : ''}`;
+            break;
         }
 
         if (['image', 'video', 'document'].includes(saved.type)) {
-          msgOptions.caption = `${header}\nOriginal caption: ${saved.caption || '—'}`;
           msgOptions.contextInfo = { mentionedJid: mention };
         }
 
-        await dave.sendMessage(targetJid, msgOptions);  // ✅ Changed venom to dave
+        await DaveAi.sendMessage(targetJid, msgOptions);  // ✅ Changed dave to DaveAi
         return;
       }
 
-      await dave.sendMessage(targetJid, {  // ✅ Changed venom to dave
-        text: `${header}\n(Content type not supported)`,
+      // OTHER MESSAGE TYPES
+      await DaveAi.sendMessage(targetJid, {  // ✅ Changed dave to DaveAi
+        text: `${header}\n(Deleted message type: ${saved.type})`,
         mentions: mention
       });
 
@@ -233,7 +274,7 @@ module.exports = function initAntiDelete(dave, opts = {}) {  // ✅ Changed veno
     }
   }
 
-  dave.ev.on('messages.upsert', async ({ messages }) => {  // ✅ Changed venom to dave
+  DaveAi.ev.on('messages.upsert', async ({ messages }) => {  // ✅ Changed dave to DaveAi
     for (const m of messages) {
       try {
         if (m?.message?.protocolMessage) await handleProtocolMessage(m);
