@@ -8,8 +8,6 @@ const { Boom } = require('@hapi/boom')
 const { Low, JSONFile } = require('./library/lib/lowdb')
 const yargs = require('yargs/yargs')
 const fs = require('fs')
-const { loadSettings } = require('./settings');
-global.settings = loadSettings();
 const chalk = require('chalk')
 const path = require('path')
 const axios = require('axios')
@@ -84,7 +82,7 @@ function detectHost() {
 }
 
 //------------------------------------------------------
-let phoneNumber = "254104245659"
+let phoneNumber = "254104260236"
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
@@ -103,7 +101,7 @@ async function saveSessionFromConfig() {
     if (!sessionId) return false;
     if (!sessionId.includes('DaveAi~')) return false;
 
-    const base64Data = sessionId.split("DaveAi~")[1];
+    const base64Data = sessionId.split("DaveAi:~")[1];
     if (!base64Data) return false;
 
     const sessionData = Buffer.from(base64Data, 'base64');
@@ -640,7 +638,7 @@ async function sessionID() {
     // Just check global and env - NO config since you don't have it!
     const sessionId = global.SESSION_ID || process.env.SESSION_ID;
     
-    if (sessionId && sessionId.includes("DaveAi~")) {
+    if (sessionId && sessionId.includes("DaveAi:~")) {
       const ok = await saveSessionFromConfig();
       if (ok) {
         console.log(chalk.greenBright("✅ Session ID loaded and saved successfully. Starting bot..."));
